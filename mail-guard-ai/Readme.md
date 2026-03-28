@@ -1,146 +1,64 @@
-# 🚀 Mail Guard AI
+# 📧 Mail Guard AI
 
-### 📧 Spam Email Detection System using Machine Learning
-
----
-
-## 🔍 Overview
-
-**Mail Guard AI** is a machine learning-based project that detects whether an email message is **Spam 🚫** or **Not Spam ✅**.
-It uses natural language processing techniques to analyze text and make accurate predictions.
+A smart spam email detection system using Machine Learning and a professional UI.
 
 ---
 
-## ✨ Features
+## 📁 Project Structure
 
-- 📌 Detects spam emails instantly
-- ⚡ Fast and lightweight model
-- 🧠 Uses Machine Learning (Naive Bayes)
-- 💻 Simple and interactive UI (Streamlit)
-- 📦 Executable file support (.exe)
-
----
-
-## 🛠️ Tech Stack
-
-- 🐍 Python
-- 📊 Scikit-learn
-- 🧮 Pandas & NumPy
-- 🌐 Streamlit
-- ⚙️ PyInstaller
-
----
-
-## 📂 Project Structure
-
-```
 mail-guard-ai/
+
 │
 ├── data/
-│   └── spam.csv
+│ └── spam.csv # Dataset
 │
 ├── model/
-│   ├── model.pkl
-│   └── vectorizer.pkl
+│ ├── model.pkl # Trained ML model
+│ └── vectorizer.pkl # TF-IDF vectorizer
 │
-├── model.py        # Train model
-├── main.py         # Streamlit UI
-├── app.py          # CLI (for .exe)
-├── requirements.txt
-├── README.md
-```
+├── src/
+│ ├── preprocessing.py # Text cleaning functions
+│ ├── train.py # Model training script
+│ ├── predict.py # Prediction logic
+│
+├── artifacts/
+│ └── confusion_matrix.png # Model evaluation output
+│
+├── spam_keywords.py # Keyword-based spam rules
+├── main.py # Streamlit frontend
+├── app.py # CLI / executable version
+├── requirements.txt # Dependencies
+└── README.md # Project documentation
 
 ---
 
-## ⚙️ Installation & Setup
+## ⚙️ How to Run
 
-### 1️⃣ Clone Repository
+1. Install dependencies:
+   pip install -r requirements.txt
 
-```
-git clone https://github.com/YOUR_USERNAME/mail-guard-ai.git
-cd mail-guard-ai
-```
+2. Train the model:
+   python src/train.py
 
-### 2️⃣ Install Dependencies
+3. Run the frontend:
+   python -m streamlit run main.py
 
-```
-pip install -r requirements.txt
-```
-
----
-
-## ▶️ How to Run
-
-### 🔹 Train Model
-
-```
-python model.py
-```
-
-### 🔹 Run Web App
-
-```
-streamlit run main.py
-```
+4. Create executable (optional):
+   python -m PyInstaller --onefile --collect-all sklearn --add-data "model;model" app.py
 
 ---
 
-## 💻 Run Executable (.exe)
+## 🚀 Features
 
-After building:
-
-```
-dist/app.exe
-```
-
----
-
-## 🧠 How It Works
-
-- Text data is converted using **TF-IDF Vectorization**
-- Model is trained using **Naive Bayes Algorithm**
-- Predicts whether input text is spam or not
+- Machine Learning spam detection
+- Hybrid system (ML + keyword rules)
+- Explainable predictions
+- Confusion matrix visualization
+- Professional UI with dark/light mode
 
 ---
 
-## 📊 Output Example
+## 👨‍💻 Authors
 
-| Input Message         | Result      |
-| --------------------- | ----------- |
-| "You won a lottery!"  | 🚫 Spam     |
-| "Let's meet tomorrow" | ✅ Not Spam |
-
----
-
-## 📸 Screenshots
-
-_(Add your screenshots here before submission)_
-
----
-
-## 🎯 Future Scope
-
-- Add Deep Learning models
-- Improve accuracy with larger datasets
-- Deploy as a web application
-
----
-
-## 👨‍💻 Contributors
-
-- Your Name
-- Your Friend's Name
-
----
-
-## 📜 License
-
-This project is for educational purposes only.
-
----
-
-## ⭐ If you like this project
-
-Give it a star on GitHub ⭐
-
----
+- Manas Gupta
+- Prathamesh Lahoti
