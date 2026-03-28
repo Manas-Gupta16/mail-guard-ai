@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environment
+.venv/
+
+# PyInstaller
+build/
+dist/
+*.spec
+
+# Model files (optional - keep if small)
+# model/*.pkl
+
+# OS
+.DS_Store
+Thumbs.db
