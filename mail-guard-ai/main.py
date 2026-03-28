@@ -115,6 +115,5 @@ except:
 
 # ----------- FOOTER -----------
 st.markdown("---")
-st.markdown("<p class='center'>🚀 Built by Mail Guard AI Team</p>", unsafe_allow_html=True)
 
 st.markdown("</div>", unsafe_allow_html=True)
