@@ -1,0 +1,54 @@
+========================
+📧 SPAM EMAIL EXAMPLES
+========================
+
+Win a free iPhone now! Click here to claim your prize
+Congratulations! You have been selected for a cash reward
+Earn money fast with this limited time offer
+Urgent! Your account is compromised, verify now
+Get rich quick with this amazing investment opportunity
+Free trial available, sign up now
+Double your income working from home
+You are a lucky winner! Claim your reward
+Exclusive deal just for you, act now
+Click here to get free access to premium services
+Limited time offer, don’t miss out
+Get paid instantly, no experience required
+Lowest price guaranteed, buy now
+Free gift card waiting for you
+Make money online with zero investment
+
+========================
+✅ NOT SPAM EMAIL EXAMPLES
+========================
+
+Hi, let's meet tomorrow at 10 AM
+Please find the attached report for review
+Can you send me the project update?
+Lunch at 1 PM today?
+Reminder: team meeting at 5 PM
+Thank you for your help
+Let's catch up this weekend
+Your order has been shipped successfully
+Meeting rescheduled to Monday
+Please review the document and share feedback
+Call me when you are free
+Project deadline is next Friday
+Happy birthday! Have a great day
+Let me know your availability
+Thanks for the update
+
+========================
+🧪 EDGE CASES (IMPORTANT FOR TESTING)
+========================
+
+This is not spam, just a reminder for your meeting
+Congratulations on your promotion
+Free time this evening?
+Urgent meeting today at office
+Click the link to access the document
+You have received a message from your friend
+Limited seats available for the workshop
+Please verify the document before submission
+Win or lose, participation matters
+Special offer on books this weekend
