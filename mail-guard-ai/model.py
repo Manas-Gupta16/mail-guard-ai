@@ -7,6 +7,7 @@ import pickle
 df = pd.read_csv('data/spam.csv', encoding='latin-1')
 
 # Keep only required columns
+# this is for the original dataset, which has extra columns we don't need
 df = df[['v1', 'v2']]
 df.columns = ['label', 'message']
 

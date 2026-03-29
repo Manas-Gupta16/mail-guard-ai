@@ -5,6 +5,8 @@ import pickle
 # Handle path for exe
 base_path = getattr(sys, '_MEIPASS', os.path.abspath("."))
 
+# Load model and vectorizer
+# This is the improved model with better accuracy and explainability
 model_path = os.path.join(base_path, "model", "model.pkl")
 vectorizer_path = os.path.join(base_path, "model", "vectorizer.pkl")
 

@@ -13,3 +13,4 @@ spam_keywords = [
     "cheap", "discount", "deal", "bonus", "income", "investment",
     "loan", "credit", "offer", "trial", "unlimited", "work from home"
 ]
+# This list can be expanded with more keywords and phrases commonly found in spam emails.

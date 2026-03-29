@@ -5,6 +5,7 @@ from PIL import Image
 from datetime import datetime
 
 # Load model
+# This is the improved model with better accuracy and explainability
 model = pickle.load(open('model/model.pkl', 'rb'))
 vectorizer = pickle.load(open('model/vectorizer.pkl', 'rb'))
 

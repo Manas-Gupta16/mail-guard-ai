@@ -8,3 +8,6 @@ def predict_message(msg):
     msg = clean_text(msg)
     vec = vectorizer.transform([msg])
     return model.predict(vec)[0]
+
+# Example usage
+# msg = "Congratulations! You've won a free lottery. Click here to claim your prize."
