@@ -5,7 +5,6 @@ from PIL import Image
 from datetime import datetime
 
 # Load model
-# This is the improved model with better accuracy and explainability
 model = pickle.load(open('model/model.pkl', 'rb'))
 vectorizer = pickle.load(open('model/vectorizer.pkl', 'rb'))
 
@@ -58,8 +57,16 @@ st.markdown("<div class='card'>", unsafe_allow_html=True)
 
 st.subheader("Let's Predict")
 
-msg = st.text_area("Enter your message:", height=120)
+# ----------- FILE UPLOAD FEATURE -----------
+uploaded_file = st.file_uploader("📂 Upload Email (.txt file)", type=["txt"])
 
+if uploaded_file is not None:
+    msg = uploaded_file.read().decode("utf-8")
+    st.text_area("Preview:", msg, height=120)
+else:
+    msg = st.text_area("Enter your message:", height=120)
+
+# ----------- PREDICTION -----------
 if st.button("🔍 Analyze Email"):
 
     if msg.strip() == "":
