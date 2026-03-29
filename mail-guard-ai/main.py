@@ -2,6 +2,7 @@ import streamlit as st
 import pickle
 from spam_keywords import spam_keywords
 from PIL import Image
+from datetime import datetime
 
 # Load model
 model = pickle.load(open('model/model.pkl', 'rb'))
@@ -77,10 +78,14 @@ if st.button("🔍 Analyze Email"):
         st.markdown("### 📊 Result")
 
         # Hybrid logic
+        is_spam = False
+
         if matched:
             st.error("🚫 Spam Email (Keyword Detection)")
+            is_spam = True
         elif prob > 0.65:
             st.error("🚫 Spam Email (ML Model)")
+            is_spam = True
         else:
             st.success("✅ Not Spam")
 
@@ -101,6 +106,33 @@ if st.button("🔍 Analyze Email"):
         st.markdown("### 📊 Confidence Score")
         st.progress(int(prob * 100))
 
+        # ----------- DOWNLOAD REPORT -----------
+        report = f"""
+Mail Guard AI - Prediction Report
+
+Input Message:
+{msg}
+
+Prediction:
+{"Spam" if is_spam else "Not Spam"}
+
+Confidence:
+{prob:.2f}
+
+Detected Keywords:
+{', '.join(matched[:5]) if matched else 'None'}
+
+Generated at:
+{datetime.now()}
+"""
+
+        st.download_button(
+            label="📄 Download Report",
+            data=report,
+            file_name="spam_report.txt",
+            mime="text/plain"
+        )
+
 st.markdown("</div>", unsafe_allow_html=True)
 
 # ----------- CONFUSION MATRIX -----------
@@ -115,5 +147,6 @@ except:
 
 # ----------- FOOTER -----------
 st.markdown("---")
+st.markdown("<p class='center'>🚀 Built by Mail Guard AI Team</p>", unsafe_allow_html=True)
 
 st.markdown("</div>", unsafe_allow_html=True)
