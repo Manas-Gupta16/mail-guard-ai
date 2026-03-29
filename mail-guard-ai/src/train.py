@@ -23,6 +23,10 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 # Vectorization
+# Improved vectorizer with stop words removal and n-grams
+# This helps the model capture more context and reduces noise, leading to better performance.
+# The n-gram range of (1, 2) allows the model to consider both individual words and pairs of words, which can be crucial for detecting spam patterns.
+
 vectorizer = TfidfVectorizer(stop_words='english', ngram_range=(1,2))
 X_train_vec = vectorizer.fit_transform(X_train)
 X_test_vec = vectorizer.transform(X_test)
