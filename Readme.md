@@ -69,6 +69,14 @@ A professional frontend is built using Streamlit:
 
 ---
 
+## 📌 Additional Notes
+
+- This project uses a hybrid approach combining Machine Learning and rule-based filtering.
+- The system provides explainable predictions with confidence scores.
+- Designed with a user-friendly interface for real-time spam detection.
+
+--
+
 ## 🎯 Conclusion
 
 Mail Guard AI demonstrates how machine learning can be applied to solve real-world problems like spam detection, combining accuracy with usability and explainability.
