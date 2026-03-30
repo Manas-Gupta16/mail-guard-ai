@@ -1,0 +1,1 @@
+Spam detection web app using Machine Learning with a clean UI and real-time prediction.
