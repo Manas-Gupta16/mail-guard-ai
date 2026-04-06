@@ -18,9 +18,11 @@ spam_keywords = [
     "click here", "verify", "account", "claim", "offer"
 ]
 
+import re
+
 msg = input("Enter email text: ").lower()
 
-if any(word in msg for word in spam_keywords):
+if any(re.search(rf"\b{re.escape(word)}\b", msg) for word in spam_keywords):
     print("Spam Email 🚫 (Rule-based)")
 else:
     data = vectorizer.transform([msg])
