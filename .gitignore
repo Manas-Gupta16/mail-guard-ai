@@ -1,0 +1,73 @@
+# ========================
+# Python
+# ========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+*.onnx
+*.pkl
+
+# ========================
+# Node.js
+# ========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ========================
+# Environment & Secrets
+# ========================
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# ========================
+# IDE
+# ========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ========================
+# Docker
+# ========================
+docker-compose.override.yml
+*.tar
+
+# ========================
+# ML Artifacts (large files)
+# ========================
+packages/ml-service/models/*.onnx
+packages/ml-service/models/*.bin
+packages/ml-service/models/*.safetensors
+packages/ml-service/data/*.csv
+packages/ml-service/data/*.parquet
+
+# ========================
+# Build outputs
+# ========================
+packages/web-client/dist/
+packages/api-server/dist/
+coverage/
+.nyc_output/
+
+# ========================
+# Misc
+# ========================
+*.log
+*.tmp
+.agents/

@@ -1,0 +1,88 @@
+# ============================================
+# Mail Guard AI — Docker Compose (Development)
+# Run: docker-compose up --build
+# ============================================
+
+services:
+  # ─── Python ML Service ─────────────────────────────────────────────
+  ml-service:
+    build: ./packages/ml-service
+    ports:
+      - "8000:8000"
+    environment:
+      - ML_HOST=0.0.0.0
+      - ML_PORT=8000
+      - ML_MODEL_PATH=/app/models/distilbert-spam-v2
+      - ML_USE_ONNX=true
+    volumes:
+      - ./packages/ml-service/models:/app/models
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8000/health').raise_for_status()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ─── Node.js API Gateway ───────────────────────────────────────────
+  api-server:
+    build: ./packages/api-server
+    ports:
+      - "3000:3000"
+    depends_on:
+      ml-service:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=development
+      - API_PORT=3000
+      - API_VERSION=v1
+      - ML_SERVICE_URL=http://ml-service:8000
+      - DATABASE_URL=postgresql://mailguard:mailguard@postgres:5432/mailguard
+      - REDIS_URL=redis://redis:6379
+      - CORS_ORIGIN=http://localhost:5173
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+    restart: unless-stopped
+
+  # ─── React Frontend ────────────────────────────────────────────────
+  web-client:
+    build: ./packages/web-client
+    ports:
+      - "5173:80"
+    depends_on:
+      - api-server
+    restart: unless-stopped
+
+  # ─── PostgreSQL ────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=mailguard
+      - POSTGRES_PASSWORD=mailguard
+      - POSTGRES_DB=mailguard
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mailguard"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Redis ─────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:

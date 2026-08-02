@@ -1,0 +1,72 @@
+// ============================================
+// Mail Guard AI — Prisma Schema
+//
+// Database models for predictions, feedback,
+// API keys, and audit logging.
+// ============================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Prediction Log ─────────────────────────────────────────────────
+// Every classification request is logged for analytics and retraining
+model Prediction {
+  id           String   @id @default(cuid())
+  inputHash    String   // SHA-256 of input text (for cache dedup)
+  inputText    String   // Original email text
+  label        String   // "spam" | "ham"
+  confidence   Float    // Model confidence (0-1)
+  shapTokens   Json?    // SHAP token attributions
+  features     Json?    // Structural feature extraction results
+  explanation  String?  // Gemini-generated natural language explanation
+  modelVersion String   @map("model_version")
+  inferenceMs  Int      @map("inference_ms") // Inference latency in ms
+  apiKeyId     String?  @map("api_key_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // Relations
+  feedback Feedback?
+  apiKey   ApiKey?   @relation(fields: [apiKeyId], references: [id])
+
+  @@index([inputHash])
+  @@index([createdAt])
+  @@index([label])
+  @@map("predictions")
+}
+
+// ─── User Feedback ──────────────────────────────────────────────────
+// Human-in-the-loop corrections for model monitoring
+model Feedback {
+  id           String     @id @default(cuid())
+  predictionId String     @unique @map("prediction_id")
+  prediction   Prediction @relation(fields: [predictionId], references: [id], onDelete: Cascade)
+  userLabel    String     @map("user_label") // What the user says it actually is
+  comment      String?    // Optional user comment
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@map("feedback")
+}
+
+// ─── API Keys ───────────────────────────────────────────────────────
+// Tiered API access with rate limiting
+model ApiKey {
+  id        String   @id @default(cuid())
+  key       String   @unique // The actual API key (hashed in production)
+  name      String   // Human-readable name (e.g., "My App")
+  tier      String   @default("free") // "free" | "pro"
+  rateLimit Int      @default(50) @map("rate_limit") // Requests per hour
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  predictions Prediction[]
+
+  @@map("api_keys")
+}

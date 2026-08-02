@@ -1,0 +1,228 @@
+--- Slide 1 ---
+
+
+PRESENTED BY:
+
+CHAD GIBBONS
+ARTIFICIAL INTELLIGENCE & MACHINE LEARNING
+PRESENTATION
+THYNK UNLIMITED
+WE LEARN FOR THE FUTURE
+
+--- Slide 2 ---
+Introduction
+What is Artifical Intelligence?
+Historical Context
+Key Concepts
+What is Machine Learning?
+Types of Machine Learning
+Role of Data in Machine Learning
+Case Studies
+Real World Applications
+Ethical Considerations
+Deployment and Integration
+Preparing for the Future
+Questions and Answers
+PRESENTATION OUTLINE
+
+--- Slide 3 ---
+
+
+INTRODUCTION
+Imagine a world where machines can decipher languages, recognize faces, diagnose diseases, and even make predictions without explicit programming.
+We will embark on a journey through the ever-evolving landscape of Artificial Intelligence and Machine Learning. We'll explore the core concepts, real-world applications, and the transformative potential of these technologies.
+
+--- Slide 4 ---
+WHAT IS ARTIFICIAL INTELLIGENCE?
+Artificial Intelligence is not just a buzzword; it's a transformative force that is reshaping industries, solving complex problems, and revolutionizing the way we live and work.
+
+So, let's dive into the world of Artificial Intelligence, where machines become intelligent companions in our quest for progress and innovation.
+
+--- Slide 5 ---
+
+the birth of artificial intelligence
+
+the AI resurgence
+
+ethical & philosophical considerations
+HISTORICAL CONTEXT
+
+--- Slide 6 ---
+
+natural language processing
+
+computer vision
+
+neural networks
+
+reinforcement learning
+
+ethical AI
+
+machine learning
+KEY CONCEPTS
+
+--- Slide 7 ---
+WHAT IS MACHINE LEARNING?
+Machine learning is a subset of AI that focuses on the development of algorithms and models that enable computers to learn from and make predictions or decisions based on data.
+
+It's a key driver of AI applications, including natural language processing, image recognition, and recommendation systems.
+
+--- Slide 8 ---
+TYPES OF MACHINE LEARNING?
+
+Supervised Learning
+
+Unsupervised Learning
+
+Reinforcement Learning
+
+--- Slide 9 ---
+ROLES OF DATA IN MACHINE LEARNING?
+
+Training Machine Learning Models
+
+Future Engineering
+
+Testing and Evaluation
+
+Anomaly Detection
+
+Data Augmentation
+
+--- Slide 10 ---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+CASE STUDY SAMPLES
+HEALTHCARE
+Predicting Disease Outcomes
+Predictive Tools Maintenance
+Algorithmic Securities Trading
+Autonomous Vehicles (Hybrid)
+Personalized Recommendations & Cart Management
+Energy Consumption Optimization
+MANUFACTURING
+FINANCE
+TRANSPORTATION
+RETAIL
+ENERGY
+
+--- Slide 11 ---
+
+REAL WORLD APPLICATIONS
+2025
+2030
+2035
+2040
+An educational platform uses AI to provide personalized learning experiences for students as well as assessments suited to learnings.
+A smart grid system utilized AI to optimize energy consumption in urban areas. The system adjusted energy distribution to reduce waste and costs.
+By using natural language processing, the chatbot understood and responded to customer queries reducing response times.
+Radiologists and healthcare professionals employed deep learning algorithms to analyze medical images such as X-rays, MRIs, and CT scans.
+
+--- Slide 12 ---
+
+
+
+ETHICAL CONSIDERATIONS
+
+01
+
+02
+
+03
+AI systems can inherit biases from their training data, which may result in unfair or discriminatory outcomes. Ethical AI requires addressing and mitigating bias to ensure that AI systems are fair and equitable for all individuals and groups.
+Ethical AI considers the degree of autonomy given to AI systems and the control mechanisms in place. Maintaining human oversight and control is important in critical decision-making processes.
+AI often relies on large datasets, raising concerns about data privacy. Ethical AI practices involve protecting individuals' data and ensuring transparency about how data is collected, used, and stored.
+BIAS AND FAIRNESS
+DATA PROTECTION
+AUTONOMY AND CONTROL
+
+--- Slide 13 ---
+DEPLOYMENT AND INTEGRATION
+
+
+
+
+
+
+
+
+DATA PREPARATION
+
+
+MODEL DEVELOPMENT
+
+
+MODEL EVALUATION
+Data collection, cleaning, and preprocessing
+Ensuring data quality and reliability
+Data labeling and annotation
+Selection of appropriate machine learning algorithms
+Model architecture and hyperparameter tuning
+Training process and validation
+Cross-validation and testing on validation datasets
+Assessing model performance, including accuracy, precision and recall
+
+--- Slide 14 ---
+PREPARING FOR THE FUTURE
+Preparing for the future with artificial intelligence (AI) involves strategic thinking, adaptability, and a focus on harnessing the potential of AI to drive innovation and address societal challenges.
+
+Here are some key steps and considerations for preparing for the future with AI:
+Education and Skills Development
+Data Management and Security
+Ethical and Responsible AI
+AI Integration and Talent
+Innovation and Culture
+
+--- Slide 15 ---
+QUESTIONS AND ANSWERS
+Your insights and questions are highly valuable to us, and we want to create an engaging and interactive session. Please feel free to send us your questions and concerns for clarifications.
+www.reallygreatsite.com
+123-456-7890
+hello@reallygreatsite.com
+123 Anywhere St., Any City, ST 12345
+
+--- Slide 16 ---
+Find the magic and fun in presenting with Canva Presentations.
+
+Press the keys on the table while on Present mode to experience the magic.
+
+Be sure to delete or hide this page before presenting.
+RESOURCE PAGE
+
+--- Slide 17 ---
+You may use these extra design elements in your Canva presentation.
+
+Please be sure to delete or hide this page before presenting so your audience will not be able to see them.
+RESOURCE PAGE
+
+--- Slide 18 ---
+Presenting live not your thing? No worries!
+
+Record your Canva Presentation that your audience can watch at their own pace. 
+
+Don't forget to delete or hide this page before presenting.
+RESOURCE PAGE
+
