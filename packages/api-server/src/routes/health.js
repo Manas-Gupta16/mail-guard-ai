@@ -9,6 +9,7 @@
 
 import { Router } from "express";
 import { mlService } from "../services/mlService.js";
+import { redisHealthCheck } from "../utils/redis.js";
 
 export const healthRouter = Router();
 
@@ -31,12 +32,15 @@ healthRouter.get("/", async (_req, res) => {
   }
 
   // 2. Database health
-  // TODO (Phase 2): Add Prisma connection check
+  // TODO: Add Prisma connection check when DB is wired
   checks.database = { status: "ok", message: "Not yet configured" };
 
   // 3. Redis health
-  // TODO (Phase 2): Add Redis ping check
-  checks.cache = { status: "ok", message: "Not yet configured" };
+  const redisStatus = await redisHealthCheck();
+  checks.cache = redisStatus;
+  if (redisStatus.status === "error") {
+    overallStatus = "degraded";
+  }
 
   const statusCode = overallStatus === "ok" ? 200 : 503;
 

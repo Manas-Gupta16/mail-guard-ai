@@ -19,6 +19,8 @@ import { logger } from "./utils/logger.js";
 import { correlationId } from "./middleware/correlationId.js";
 import { requestLogger } from "./middleware/requestLogger.js";
 import { errorHandler } from "./middleware/errorHandler.js";
+import { apiKeyAuth } from "./middleware/apiKeyAuth.js";
+import { rateLimiter } from "./middleware/rateLimiter.js";
 import { classifyRouter } from "./routes/classify.js";
 import { feedbackRouter } from "./routes/feedback.js";
 import { healthRouter } from "./routes/health.js";
@@ -33,6 +35,8 @@ app.use(cors({ origin: process.env.CORS_ORIGIN || "http://localhost:5173" }));
 app.use(express.json({ limit: "1mb" }));
 app.use(correlationId);
 app.use(requestLogger);
+app.use(apiKeyAuth);
+app.use(rateLimiter);
 
 // ─── API Routes ─────────────────────────────────────────────────────
 const API_PREFIX = `/api/${process.env.API_VERSION || "v1"}`;
