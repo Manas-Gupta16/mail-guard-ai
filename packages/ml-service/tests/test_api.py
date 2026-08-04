@@ -48,9 +48,9 @@ class TestHealthEndpoint:
         assert "model_version" in data
 
     def test_health_when_model_not_loaded(self):
-        with patch("src.api.main.classifier", None):
+        with patch("src.api.main.SpamClassifier", side_effect=Exception("Model failed to load")):
             from src.api.main import app
-            with TestClient(app) as c:
+            with TestClient(app, raise_server_exceptions=False) as c:
                 response = c.get("/health")
                 data = response.json()
                 assert data["status"] == "degraded"
@@ -134,9 +134,9 @@ class TestPredictEndpoint:
 
 class TestPredictEndpointModelNotLoaded:
     def test_predict_returns_503_when_no_model(self):
-        with patch("src.api.main.classifier", None):
+        with patch("src.api.main.SpamClassifier", side_effect=Exception("Model failed to load")):
             from src.api.main import app
-            with TestClient(app) as c:
+            with TestClient(app, raise_server_exceptions=False) as c:
                 response = c.post("/predict", json={
                     "text": "Test email",
                 })

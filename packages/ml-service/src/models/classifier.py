@@ -52,7 +52,7 @@ class SpamClassifier:
 
         onnx_path = self.model_path / "model.onnx"
         if not onnx_path.exists():
-            print(f"⚠️  ONNX model not found at {onnx_path}, falling back to PyTorch")
+            print(f"[!] ONNX model not found at {onnx_path}, falling back to PyTorch")
             self.use_onnx = False
             self._load_pytorch()
             return
@@ -61,7 +61,7 @@ class SpamClassifier:
             str(onnx_path),
             providers=["CPUExecutionProvider"],
         )
-        print(f"✅ ONNX model loaded from {onnx_path}")
+        print(f"[+] ONNX model loaded from {onnx_path}")
 
     def _load_pytorch(self):
         """Load PyTorch model as fallback."""
@@ -69,7 +69,7 @@ class SpamClassifier:
 
         self._model = AutoModelForSequenceClassification.from_pretrained(self.model_path)
         self._model.eval()
-        print(f"✅ PyTorch model loaded from {self.model_path}")
+        print(f"[+] PyTorch model loaded from {self.model_path}")
 
     @property
     def tokenizer(self):

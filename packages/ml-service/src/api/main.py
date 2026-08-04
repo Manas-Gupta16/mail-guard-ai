@@ -29,17 +29,22 @@ async def lifespan(app: FastAPI):
     """Load model and explainer on startup, release on shutdown."""
     global classifier, explainer
 
-    print(f"🔄 Loading model from {settings.model_path} ...")
-    classifier = SpamClassifier(
-        model_path=settings.model_path,
-        use_onnx=settings.use_onnx,
-    )
-    explainer = ShapExplainer(classifier)
-    print(f"✅ Model v{settings.model_version} loaded successfully")
+    try:
+        print(f"[+] Loading model from {settings.model_path} ...")
+        classifier = SpamClassifier(
+            model_path=settings.model_path,
+            use_onnx=settings.use_onnx,
+        )
+        explainer = ShapExplainer(classifier)
+        print(f"[+] Model v{settings.model_version} loaded successfully")
+    except Exception as err:
+        print(f"[!] Failed to load model: {err}")
+        classifier = None
+        explainer = None
 
     yield  # App is running
 
-    print("🛑 Shutting down ML service")
+    print("[*] Shutting down ML service")
     classifier = None
     explainer = None
 
