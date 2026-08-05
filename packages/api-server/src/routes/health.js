@@ -10,6 +10,7 @@
 import { Router } from "express";
 import { mlService } from "../services/mlService.js";
 import { redisHealthCheck } from "../utils/redis.js";
+import { dbHealthCheck } from "../db/prisma.js";
 
 export const healthRouter = Router();
 
@@ -32,8 +33,11 @@ healthRouter.get("/", async (_req, res) => {
   }
 
   // 2. Database health
-  // TODO: Add Prisma connection check when DB is wired
-  checks.database = { status: "ok", message: "Not yet configured" };
+  const dbStatus = await dbHealthCheck();
+  checks.database = dbStatus;
+  if (dbStatus.status === "error") {
+    overallStatus = "degraded";
+  }
 
   // 3. Redis health
   const redisStatus = await redisHealthCheck();

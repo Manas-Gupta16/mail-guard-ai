@@ -64,8 +64,10 @@ setupWebSocket(wss);
 // ─── Start Server ───────────────────────────────────────────────────
 const PORT = process.env.API_PORT || 3000;
 
-server.listen(PORT, () => {
-  logger.info({ port: PORT, prefix: API_PREFIX }, "🚀 Mail Guard AI API server started");
-});
+if (process.env.NODE_ENV !== "test") {
+  server.listen(PORT, () => {
+    logger.info({ port: PORT, prefix: API_PREFIX }, "🚀 Mail Guard AI API server started");
+  });
+}
 
 export { app, server };

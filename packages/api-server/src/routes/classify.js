@@ -18,6 +18,7 @@ import { validate } from "../middleware/validate.js";
 import { mlService } from "../services/mlService.js";
 import { geminiService } from "../services/geminiService.js";
 import { cacheGet, cacheSet } from "../utils/redis.js";
+import { getPrisma } from "../db/prisma.js";
 import { logger } from "../utils/logger.js";
 
 export const classifyRouter = Router();
@@ -40,6 +41,10 @@ classifyRouter.post("/", validate(classifySchema), async (req, res, next) => {
     logger.debug({ requestId: req.id, textLength: text.length }, "Classification request");
 
     // 1. Check cache (keyed by SHA-256 of input + options)
+    const inputHash = crypto
+      .createHash("sha256")
+      .update(text)
+      .digest("hex");
     const cacheKey = `classify:${crypto
       .createHash("sha256")
       .update(`${text}:${includeShap}:${includeExplanation}`)
@@ -87,7 +92,29 @@ classifyRouter.post("/", validate(classifySchema), async (req, res, next) => {
     // 5. Cache the result (1 hour TTL)
     await cacheSet(cacheKey, response, 3600);
 
-    // TODO: Log to PostgreSQL via Prisma (after DB is wired)
+    // 6. Log prediction to PostgreSQL via Prisma (if configured)
+    const prisma = getPrisma();
+    if (prisma) {
+      prisma.prediction
+        .create({
+          data: {
+            id: req.id,
+            inputHash,
+            inputText: text,
+            label: mlResult.label,
+            confidence: mlResult.confidence,
+            shapTokens: mlResult.shap_tokens || [],
+            features: mlResult.features || {},
+            explanation,
+            modelVersion: mlResult.model_version,
+            inferenceMs: mlResult.inference_time_ms,
+            apiKeyId: req.apiKey?.id || null,
+          },
+        })
+        .catch((dbErr) => {
+          logger.warn({ requestId: req.id, error: dbErr.message }, "Failed to persist prediction to DB");
+        });
+    }
 
     res.json(response);
   } catch (err) {

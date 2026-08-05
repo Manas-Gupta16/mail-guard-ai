@@ -7,12 +7,12 @@
   "scripts": {
     "dev": "node --watch src/index.js",
     "start": "node src/index.js",
-    "test": "node --experimental-vm-modules node_modules/.bin/jest --coverage",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --forceExit",
     "lint": "eslint src/",
-    "db:generate": "npx prisma generate",
-    "db:migrate": "npx prisma migrate dev",
-    "db:push": "npx prisma db push",
-    "db:studio": "npx prisma studio"
+    "db:generate": "npx prisma generate --schema=src/db/schema.prisma",
+    "db:migrate": "npx prisma migrate dev --schema=src/db/schema.prisma",
+    "db:push": "npx prisma db push --schema=src/db/schema.prisma",
+    "db:studio": "npx prisma studio --schema=src/db/schema.prisma"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",

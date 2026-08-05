@@ -9,6 +9,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { validate } from "../middleware/validate.js";
+import { getPrisma } from "../db/prisma.js";
 import { logger } from "../utils/logger.js";
 
 export const feedbackRouter = Router();
@@ -32,18 +33,31 @@ feedbackRouter.post("/", validate(feedbackSchema), async (req, res, next) => {
       "User feedback received"
     );
 
-    // TODO (Phase 2): Save to PostgreSQL via Prisma
-    // const feedback = await prisma.feedback.create({
-    //   data: { predictionId, userLabel, comment },
-    // });
+    const prisma = getPrisma();
+    let savedFeedback = null;
+
+    if (prisma) {
+      try {
+        savedFeedback = await prisma.feedback.create({
+          data: {
+            predictionId,
+            userLabel,
+            comment: comment || null,
+          },
+        });
+      } catch (dbErr) {
+        logger.warn({ requestId: req.id, error: dbErr.message }, "Prisma feedback creation skipped/failed");
+      }
+    }
 
     res.status(201).json({
       message: "Feedback recorded successfully",
       feedback: {
+        id: savedFeedback?.id || `fb_${req.id}`,
         predictionId,
         userLabel,
         comment: comment || null,
-        recordedAt: new Date().toISOString(),
+        recordedAt: savedFeedback?.createdAt || new Date().toISOString(),
       },
     });
   } catch (err) {
@@ -54,15 +68,59 @@ feedbackRouter.post("/", validate(feedbackSchema), async (req, res, next) => {
 // ─── GET /feedback/stats ────────────────────────────────────────────
 feedbackRouter.get("/stats", async (_req, res, next) => {
   try {
-    // TODO (Phase 2): Query PostgreSQL for real stats
-    const stats = {
-      totalFeedback: 0,
-      agreementRate: 0,
-      disagreementRate: 0,
-      recentDisagreements: [],
-    };
+    const prisma = getPrisma();
+    if (!prisma) {
+      return res.json({
+        totalFeedback: 0,
+        agreementRate: 1.0,
+        disagreementRate: 0.0,
+        recentDisagreements: [],
+      });
+    }
 
-    res.json(stats);
+    const totalFeedback = await prisma.feedback.count();
+    if (totalFeedback === 0) {
+      return res.json({
+        totalFeedback: 0,
+        agreementRate: 1.0,
+        disagreementRate: 0.0,
+        recentDisagreements: [],
+      });
+    }
+
+    // Fetch feedback with predictions to compute agreement rate
+    const feedbackList = await prisma.feedback.findMany({
+      include: { prediction: true },
+      take: 100,
+      orderBy: { createdAt: "desc" },
+    });
+
+    let agreements = 0;
+    const disagreements = [];
+
+    for (const fb of feedbackList) {
+      if (fb.prediction && fb.prediction.label === fb.userLabel) {
+        agreements += 1;
+      } else if (fb.prediction) {
+        disagreements.push({
+          predictionId: fb.predictionId,
+          modelLabel: fb.prediction.label,
+          userLabel: fb.userLabel,
+          comment: fb.comment,
+          createdAt: fb.createdAt,
+        });
+      }
+    }
+
+    const total = feedbackList.length;
+    const agreementRate = total > 0 ? agreements / total : 1.0;
+
+    res.json({
+      totalFeedback,
+      agreementRate: parseFloat(agreementRate.toFixed(4)),
+      disagreementRate: parseFloat((1 - agreementRate).toFixed(4)),
+      recentDisagreements: disagreements.slice(0, 10),
+    });
   } catch (err) {
     next(err);
   }
