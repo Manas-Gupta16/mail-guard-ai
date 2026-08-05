@@ -9,7 +9,6 @@ signals, urgency scoring, and more.
 import re
 from urllib.parse import urlparse
 
-
 # Common URL shortener domains
 SHORTENER_DOMAINS = {
     "bit.ly", "tinyurl.com", "t.co", "goo.gl", "ow.ly", "is.gd",
@@ -91,11 +90,11 @@ class FeatureExtractor:
         for url in urls:
             try:
                 parsed = urlparse(url)
-                domain = parsed.netloc.lower().lstrip("www.")
+                domain = re.sub(r"^www\.", "", parsed.netloc.lower())
                 if domain in SHORTENER_DOMAINS:
                     count += 1
-            except Exception:
-                continue
+            except (ValueError, TypeError, AttributeError):
+                pass
         return count
 
     def _urgency_score(self, text: str) -> float:

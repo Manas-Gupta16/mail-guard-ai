@@ -74,7 +74,7 @@ class ShapExplainer:
         scores = shap_values.values[0][:, 1]  # spam class attributions
 
         token_scores = []
-        for token, score in zip(tokens, scores):
+        for token, score in zip(tokens, scores, strict=False):
             token_str = str(token).strip()
             if token_str and token_str not in ("[CLS]", "[SEP]", "[PAD]"):
                 token_scores.append({

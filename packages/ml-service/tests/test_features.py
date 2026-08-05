@@ -7,7 +7,6 @@ and all structural feature extraction.
 
 from src.features.extractor import FeatureExtractor
 
-
 extractor = FeatureExtractor()
 
 

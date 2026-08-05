@@ -4,17 +4,17 @@ Mail Guard AI — ML Service
 FastAPI application providing spam classification with SHAP explainability.
 """
 
-from contextlib import asynccontextmanager
 import time
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from src.config import settings
-from src.models.classifier import SpamClassifier
 from src.explainers.shap_explainer import ShapExplainer
 from src.features.extractor import FeatureExtractor
+from src.models.classifier import SpamClassifier
 
 # --------------------------------------------------------------------------- #
 #  Globals (loaded once at startup)

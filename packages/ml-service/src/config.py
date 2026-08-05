@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     """ML Service configuration."""
 
     # Server
-    host: str = "0.0.0.0"
+    host: str = "0.0.0.0"  # noqa: S104
     port: int = 8000
     debug: bool = False
 

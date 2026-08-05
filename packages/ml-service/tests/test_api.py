@@ -5,10 +5,10 @@ Uses FastAPI's TestClient for synchronous testing without
 needing a running server or trained model.
 """
 
-import pytest
 from unittest.mock import MagicMock, patch
-from fastapi.testclient import TestClient
 
+import pytest
+from fastapi.testclient import TestClient
 
 # ─── Mock the classifier before importing the app ─────────────────────
 mock_classifier = MagicMock()

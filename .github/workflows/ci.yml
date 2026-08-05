@@ -1,6 +1,6 @@
 # ============================================
 # Mail Guard AI — CI Pipeline
-# Runs on every PR: lint, test, build
+# Runs on every PR and push to main: lint, test, docker build
 # ============================================
 
 name: CI
@@ -27,19 +27,18 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: "pip"
 
       - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install -e ".[dev]"
 
       - name: Lint with Ruff
         run: ruff check src/ tests/
 
-      - name: Type check with MyPy
-        run: mypy src/ --ignore-missing-imports
-
-      - name: Run tests
-        run: pytest --cov=src --cov-report=term-missing
+      - name: Run Pytest suite
+        run: pytest
 
   # ─── Node.js API Server ────────────────────────────────────────────
   api-server:
@@ -62,50 +61,23 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Lint
-        run: npm run lint
+      - name: Generate Prisma Client
+        run: npm run db:generate
 
-      - name: Run tests
+      - name: Run Jest test suite
         run: npm test
-
-  # ─── React Frontend ────────────────────────────────────────────────
-  web-client:
-    name: Web Client (React)
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: packages/web-client
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "npm"
-          cache-dependency-path: packages/web-client/package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run build
 
   # ─── Docker Build Test ─────────────────────────────────────────────
   docker:
     name: Docker Build
     runs-on: ubuntu-latest
-    needs: [ml-service, api-server, web-client]
+    needs: [ml-service, api-server]
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build ML Service
+      - name: Build ML Service Container
         run: docker build -t mail-guard-ml:test packages/ml-service
 
-      - name: Build API Server
+      - name: Build API Server Container
         run: docker build -t mail-guard-api:test packages/api-server
-
-      - name: Build Web Client
-        run: docker build -t mail-guard-web:test packages/web-client

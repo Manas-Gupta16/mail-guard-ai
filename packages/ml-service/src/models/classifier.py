@@ -94,10 +94,7 @@ class SpamClassifier:
             padding=True,
         )
 
-        if self.use_onnx:
-            logits = self._predict_onnx(inputs)
-        else:
-            logits = self._predict_pytorch(inputs)
+        logits = self._predict_onnx(inputs) if self.use_onnx else self._predict_pytorch(inputs)
 
         probabilities = self._softmax(logits[0])
         predicted_class = int(np.argmax(probabilities))
