@@ -37,7 +37,10 @@ export async function dbHealthCheck() {
   if (!client) return { status: "disabled", message: "DATABASE_URL not set" };
 
   try {
-    await client.$queryRaw`SELECT 1`;
+    const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Database connection timeout")), 1500)
+    );
+    await Promise.race([client.$queryRaw`SELECT 1`, timeout]);
     return { status: "ok" };
   } catch (err) {
     return { status: "error", message: err.message };

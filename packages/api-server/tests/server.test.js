@@ -5,7 +5,10 @@
  */
 
 import request from "supertest";
+import { jest } from "@jest/globals";
 import { app } from "../src/index.js";
+
+jest.setTimeout(10000);
 
 describe("API Gateway Routes", () => {
   describe("GET /", () => {

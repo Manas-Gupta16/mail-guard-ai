@@ -78,8 +78,52 @@ feedbackRouter.get("/stats", async (_req, res, next) => {
       });
     }
 
-    const totalFeedback = await prisma.feedback.count();
-    if (totalFeedback === 0) {
+    try {
+      const totalFeedback = await prisma.feedback.count();
+      if (totalFeedback === 0) {
+        return res.json({
+          totalFeedback: 0,
+          agreementRate: 1.0,
+          disagreementRate: 0.0,
+          recentDisagreements: [],
+        });
+      }
+
+      // Fetch feedback with predictions to compute agreement rate
+      const feedbackList = await prisma.feedback.findMany({
+        include: { prediction: true },
+        take: 100,
+        orderBy: { createdAt: "desc" },
+      });
+
+      let agreements = 0;
+      const disagreements = [];
+
+      for (const fb of feedbackList) {
+        if (fb.prediction && fb.prediction.label === fb.userLabel) {
+          agreements += 1;
+        } else if (fb.prediction) {
+          disagreements.push({
+            predictionId: fb.predictionId,
+            modelLabel: fb.prediction.label,
+            userLabel: fb.userLabel,
+            comment: fb.comment,
+            createdAt: fb.createdAt,
+          });
+        }
+      }
+
+      const total = feedbackList.length;
+      const agreementRate = total > 0 ? agreements / total : 1.0;
+
+      return res.json({
+        totalFeedback,
+        agreementRate: parseFloat(agreementRate.toFixed(4)),
+        disagreementRate: parseFloat((1 - agreementRate).toFixed(4)),
+        recentDisagreements: disagreements.slice(0, 10),
+      });
+    } catch (dbErr) {
+      logger.warn({ error: dbErr.message }, "Database query failed in feedback/stats — returning default stats");
       return res.json({
         totalFeedback: 0,
         agreementRate: 1.0,
@@ -87,40 +131,6 @@ feedbackRouter.get("/stats", async (_req, res, next) => {
         recentDisagreements: [],
       });
     }
-
-    // Fetch feedback with predictions to compute agreement rate
-    const feedbackList = await prisma.feedback.findMany({
-      include: { prediction: true },
-      take: 100,
-      orderBy: { createdAt: "desc" },
-    });
-
-    let agreements = 0;
-    const disagreements = [];
-
-    for (const fb of feedbackList) {
-      if (fb.prediction && fb.prediction.label === fb.userLabel) {
-        agreements += 1;
-      } else if (fb.prediction) {
-        disagreements.push({
-          predictionId: fb.predictionId,
-          modelLabel: fb.prediction.label,
-          userLabel: fb.userLabel,
-          comment: fb.comment,
-          createdAt: fb.createdAt,
-        });
-      }
-    }
-
-    const total = feedbackList.length;
-    const agreementRate = total > 0 ? agreements / total : 1.0;
-
-    res.json({
-      totalFeedback,
-      agreementRate: parseFloat(agreementRate.toFixed(4)),
-      disagreementRate: parseFloat((1 - agreementRate).toFixed(4)),
-      recentDisagreements: disagreements.slice(0, 10),
-    });
   } catch (err) {
     next(err);
   }

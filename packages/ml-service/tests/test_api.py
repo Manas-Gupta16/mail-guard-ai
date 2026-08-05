@@ -30,9 +30,8 @@ mock_explainer.explain.return_value = [
 @pytest.fixture
 def client():
     """Create a test client with mocked ML components."""
-    # Patch the globals in the main module
-    with patch("src.api.main.classifier", mock_classifier), \
-         patch("src.api.main.explainer", mock_explainer):
+    with patch("src.api.main.SpamClassifier", return_value=mock_classifier), \
+         patch("src.api.main.ShapExplainer", return_value=mock_explainer):
         from src.api.main import app
         with TestClient(app) as c:
             yield c
