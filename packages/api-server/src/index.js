@@ -8,7 +8,12 @@
  *  - WebSocket server for streaming inference
  */
 
-import "dotenv/config";
+import dotenv from "dotenv";
+import path from "path";
+
+// Load root .env file if available, otherwise default dotenv
+dotenv.config({ path: path.resolve(process.cwd(), "../.env") });
+dotenv.config(); // fallback
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";

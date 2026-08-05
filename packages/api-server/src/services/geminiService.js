@@ -10,24 +10,19 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { logger } from "../utils/logger.js";
 
-let model = null;
+let genAI = null;
 
-/**
- * Lazily initialize the Gemini client.
- * Returns null if no API key is configured.
- */
-function getModel() {
-  if (model) return model;
+function getGenAI() {
+  if (genAI) return genAI;
 
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    logger.warn("GEMINI_API_KEY not set — explanation generation disabled");
+  if (!apiKey || apiKey.includes("your_gemini_api_key")) {
+    logger.warn("GEMINI_API_KEY is missing or placeholder — explanation generation disabled");
     return null;
   }
 
-  const genAI = new GoogleGenerativeAI(apiKey);
-  model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-  return model;
+  genAI = new GoogleGenerativeAI(apiKey);
+  return genAI;
 }
 
 export const geminiService = {
@@ -35,16 +30,11 @@ export const geminiService = {
    * Generate a human-readable explanation for a spam classification.
    *
    * @param {Object} context - Analysis context
-   * @param {string} context.label - "spam" or "ham"
-   * @param {number} context.confidence - Classification confidence (0-1)
-   * @param {Array} context.shapTokens - SHAP token attributions
-   * @param {Object} context.features - Structural features
-   * @param {string} context.textExcerpt - First 200 chars of email
    * @returns {Promise<string|null>} Natural language explanation
    */
   async generateExplanation(context) {
-    const geminiModel = getModel();
-    if (!geminiModel) return null;
+    const ai = getGenAI();
+    if (!ai) return null;
 
     const topTokens = (context.shapTokens || [])
       .slice(0, 10)
@@ -75,13 +65,29 @@ Rules:
 - Do NOT use markdown formatting. Write plain text only.
 - Keep it to exactly 2-3 sentences.`;
 
-    try {
-      const result = await geminiModel.generateContent(prompt);
-      const text = result.response.text();
-      return text.trim();
-    } catch (err) {
-      logger.error({ error: err.message }, "Gemini explanation generation failed");
-      return null;
+    // Active model list supported by Gemini API v1beta
+    const candidateModels = [
+      "gemini-2.5-flash",
+      "gemini-flash-latest",
+      "gemini-2.0-flash",
+      "gemini-2.0-flash-lite",
+    ];
+
+    for (const modelName of candidateModels) {
+      try {
+        const model = ai.getGenerativeModel({ model: modelName });
+        const result = await model.generateContent(prompt);
+        const text = result.response.text();
+        if (text) {
+          logger.info({ modelUsed: modelName }, "Gemini explanation generated successfully");
+          return text.trim();
+        }
+      } catch (err) {
+        logger.debug({ modelName, error: err.message }, "Gemini model candidate failed, trying next fallback");
+      }
     }
+
+    logger.error("All Gemini model candidates failed to generate explanation");
+    return null;
   },
 };
