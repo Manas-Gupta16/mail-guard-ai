@@ -38,7 +38,7 @@ jobs:
         run: ruff check src/ tests/
 
       - name: Run Pytest suite
-        run: pytest
+        run: PYTHONPATH=. pytest
 
   # ─── Node.js API Server ────────────────────────────────────────────
   api-server:
