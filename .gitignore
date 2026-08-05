@@ -51,7 +51,8 @@ docker-compose.override.yml
 # ========================
 # ML Artifacts (large files)
 # ========================
-packages/ml-service/models/
+packages/ml-service/models/*
+!packages/ml-service/models/.gitkeep
 packages/ml-service/data/*.csv
 packages/ml-service/data/*.parquet
 
