@@ -74,23 +74,23 @@ graph TD
 
 ## Core Capabilities
 
-### 1. 🛡️ 4-Class Threat Taxonomy & Compound Risk Scoring
+### 1. 4-Class Threat Taxonomy & Compound Risk Scoring
 Every email is evaluated across deep semantic layers and structural heuristic extractors:
 - **`ham`**: Benign personal and enterprise communications (`riskScore`: 0–24, `LOW`).
 - **`marketing_spam`**: Commercial mass marketing, promotional newsletters, and discount offers (`riskScore`: 25–60, `MEDIUM`).
 - **`phishing`**: Credential harvesting, urgent account suspension threats, and disguised login URLs (`riskScore`: 61–85, `HIGH`).
 - **`malware_dropper`**: Suspicious script payloads, dangerous attachments (`.exe`, `.iso`, `.zip`, `.scr`), and macro execution triggers (`riskScore`: 86–100, `CRITICAL`).
 
-### 2. 🔍 Explainable AI (SHAP) & LLM Reasoning (Gemini 2.5 Flash)
+### 2. Explainable AI (SHAP) & LLM Reasoning (Gemini 2.5 Flash)
 - **Token Attribution (SHAP)**: Calculates Shapley values for each word. Positive scores push toward spam (`"Verify"`, `"+0.091"`, `"funds"`, `"+0.042"`), while negative scores push toward legitimate context (`"meeting"`, `"-0.052"`).
 - **Gemini Threat Briefing**: Synthesizes token attributions and structural features into an actionable 2-3 sentence security analyst briefing.
 
-### 3. ⚡ Asynchronous Batch Ingestion Pipeline
+### 3. Asynchronous Batch Ingestion Pipeline
 - **`POST /api/v1/batch`**: Accepts bulk email payloads (up to 1,000+ items), returning `202 Accepted` with a tracking `jobId`.
 - **`GET /api/v1/batch/:jobId`**: Real-time progress polling (0%–100%), processing speed (emails/sec), threat distribution breakdown, and high-risk flagged items.
 - **`GET /api/v1/batch/:jobId/download`**: Exportable JSON scan report.
 
-### 4. 📊 Prometheus Metrics & Observability
+### 4. Prometheus Metrics & Observability
 Standard Prometheus metrics exposed at `/metrics`:
 - `mailguard_http_requests_total{method, route, status_code}`
 - `mailguard_http_request_duration_seconds` (latency histogram)
@@ -100,7 +100,7 @@ Standard Prometheus metrics exposed at `/metrics`:
 - `mailguard_active_ws_connections` (gauge)
 - `mailguard_batch_jobs_total{status}`
 
-### 5. 🔄 Active Learning & Model Drift Engine
+### 5. Active Learning & Model Drift Engine
 - **Human-in-the-Loop Feedback**: Users submit corrections on predictions.
 - **`GET /api/v1/retrain/drift`**: Evaluates model disagreement rates and high-uncertainty samples (confidence 0.40–0.65) to compute a live drift status (`HEALTHY`, `MONITOR`, `RETRAINING_RECOMMENDED`).
 - **`POST /api/v1/retrain/export`**: Exports fine-tuning training manifests (`manifest.jsonl`) for automated retraining.
