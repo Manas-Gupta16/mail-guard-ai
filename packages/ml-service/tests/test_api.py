@@ -15,6 +15,10 @@ mock_classifier = MagicMock()
 mock_classifier.predict.return_value = {
     "label": "spam",
     "confidence": 0.95,
+    "threat_type": "phishing",
+    "risk_score": 88.5,
+    "risk_level": "CRITICAL",
+    "probabilities": {"ham": 0.05, "marketing_spam": 0.1, "phishing": 0.85, "malware_dropper": 0.0},
     "logits": [0.2, 3.0],
 }
 mock_classifier.tokenizer = MagicMock()
@@ -66,6 +70,9 @@ class TestPredictEndpoint:
         data = response.json()
         assert data["label"] == "spam"
         assert data["confidence"] > 0.5
+        assert data["threat_type"] == "phishing"
+        assert data["risk_score"] == 88.5
+        assert data["risk_level"] == "CRITICAL"
         assert len(data["shap_tokens"]) > 0
         assert "features" in data
         assert "model_version" in data
@@ -117,7 +124,8 @@ class TestPredictEndpoint:
 
         # Verify all expected fields are present
         required_fields = [
-            "label", "confidence", "shap_tokens",
+            "label", "confidence", "threat_type", "risk_score",
+            "risk_level", "probabilities", "shap_tokens",
             "features", "model_version", "inference_time_ms",
         ]
         for field in required_fields:
@@ -126,9 +134,23 @@ class TestPredictEndpoint:
         # Verify types
         assert isinstance(data["label"], str)
         assert isinstance(data["confidence"], float)
+        assert isinstance(data["threat_type"], str)
+        assert isinstance(data["risk_score"], float)
         assert isinstance(data["shap_tokens"], list)
         assert isinstance(data["features"], dict)
         assert isinstance(data["inference_time_ms"], int)
+
+
+class TestMetricsEndpoint:
+    def test_metrics_format(self, client):
+        # Trigger at least 1 prediction
+        client.post("/predict", json={"text": "Test alert for metrics", "include_shap": False})
+        res = client.get("/metrics")
+        assert res.status_code == 200
+        text = res.text
+        assert "ml_requests_total" in text
+        assert "ml_inference_latency_avg_ms" in text
+        assert "ml_predictions_by_threat_total" in text
 
 
 class TestPredictEndpointModelNotLoaded:

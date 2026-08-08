@@ -6,6 +6,8 @@
  *  - Rate limiting (Redis-backed)
  *  - API key authentication
  *  - WebSocket server for streaming inference
+ *  - Prometheus /metrics endpoint
+ *  - Asynchronous batch ingestion & active learning retraining routes
  */
 
 import dotenv from "dotenv";
@@ -29,15 +31,21 @@ import { rateLimiter } from "./middleware/rateLimiter.js";
 import { classifyRouter } from "./routes/classify.js";
 import { feedbackRouter } from "./routes/feedback.js";
 import { healthRouter } from "./routes/health.js";
+import { batchRouter } from "./routes/batch.js";
+import { retrainRouter } from "./routes/retrain.js";
+import { metricsRouter } from "./routes/metrics.js";
 import { setupWebSocket } from "./websocket/handler.js";
 
 const app = express();
 const server = http.createServer(app);
 
+// ─── Prometheus Scraper Route (before auth/rate limiting) ────────────
+app.use("/metrics", metricsRouter);
+
 // ─── Global Middleware ──────────────────────────────────────────────
 app.use(helmet());
 app.use(cors({ origin: process.env.CORS_ORIGIN || "http://localhost:5173" }));
-app.use(express.json({ limit: "1mb" }));
+app.use(express.json({ limit: "10mb" }));
 app.use(correlationId);
 app.use(requestLogger);
 app.use(apiKeyAuth);
@@ -49,13 +57,24 @@ const API_PREFIX = `/api/${process.env.API_VERSION || "v1"}`;
 app.use(`${API_PREFIX}/classify`, classifyRouter);
 app.use(`${API_PREFIX}/feedback`, feedbackRouter);
 app.use(`${API_PREFIX}/health`, healthRouter);
+app.use(`${API_PREFIX}/batch`, batchRouter);
+app.use(`${API_PREFIX}/retrain`, retrainRouter);
+app.use(`${API_PREFIX}/metrics`, metricsRouter);
 
 // Root route
 app.get("/", (_req, res) => {
   res.json({
-    name: "Mail Guard AI — API",
+    name: "Mail Guard AI — API Gateway",
     version: "2.0.0",
-    docs: `${API_PREFIX}/health`,
+    endpoints: {
+      classify: `${API_PREFIX}/classify`,
+      stream: `${API_PREFIX}/classify/stream`,
+      batch: `${API_PREFIX}/batch`,
+      feedback: `${API_PREFIX}/feedback`,
+      retrain: `${API_PREFIX}/retrain/drift`,
+      health: `${API_PREFIX}/health`,
+      metrics: "/metrics",
+    },
   });
 });
 

@@ -30,3 +30,5 @@ export function validate(schema) {
     next();
   };
 }
+
+export const validateBody = validate;

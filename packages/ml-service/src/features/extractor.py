@@ -1,9 +1,9 @@
 """
-Mail Guard AI — Feature Extractor
+Mail Guard AI — Feature Extractor & Threat Signature Engine
 
-Extracts structural and linguistic features from email text that go
+Extracts structural, linguistic, and threat signatures from email text that go
 beyond what the DistilBERT model captures — URL analysis, formatting
-signals, urgency scoring, and more.
+signals, urgency scoring, credential phishing indicators, and malware patterns.
 """
 
 import re
@@ -30,10 +30,33 @@ URGENCY_KEYWORDS = {
     "time sensitive": 0.9, "respond immediately": 1.0, "action required": 0.9,
 }
 
+# Phishing and credential harvesting keywords
+PHISHING_KEYWORDS = {
+    "verify your account": 1.0, "suspended": 0.9, "confirm identity": 1.0,
+    "password reset": 0.9, "unauthorized access": 1.0, "security alert": 0.8,
+    "login immediately": 1.0, "account locked": 1.0, "billing update": 0.8,
+    "wire transfer": 0.9, "kyc verification": 0.9, "unusual activity": 0.9,
+    "wallet recovery": 1.0, "seed phrase": 1.0, "tax refund": 0.9,
+}
+
+# Malware and dangerous payload triggers
+MALWARE_KEYWORDS = {
+    "enable macros": 1.0, "enable editing": 0.9, "download attachment": 0.9,
+    "invoice attached": 0.8, "run script": 1.0, "install certificate": 1.0,
+    "payment receipt zip": 1.0, "iso image": 0.9, "docm file": 1.0,
+}
+
+# Marketing spam indicators
+MARKETING_KEYWORDS = {
+    "unsubscribe": 1.0, "opt out": 0.9, "special offer": 0.8,
+    "discount": 0.7, "sale ends": 0.8, "newsletter": 0.9,
+    "free trial": 0.7, "coupon": 0.8, "click here to buy": 0.9,
+}
+
 # Suspicious file extensions
 DANGEROUS_EXTENSIONS = {
     ".exe", ".bat", ".cmd", ".scr", ".pif", ".com", ".vbs", ".js",
-    ".wsh", ".wsf", ".msi", ".jar", ".zip", ".rar", ".7z",
+    ".wsh", ".wsf", ".msi", ".jar", ".zip", ".rar", ".7z", ".iso", ".docm",
 }
 
 
@@ -44,10 +67,6 @@ class FeatureExtractor:
     These features complement the DistilBERT model's text understanding
     with explicit structural signals that are harder for the model to
     learn from text alone.
-
-    Usage:
-        extractor = FeatureExtractor()
-        features = extractor.extract("Click here: http://bit.ly/abc123")
     """
 
     def extract(self, text: str) -> dict:
@@ -61,6 +80,9 @@ class FeatureExtractor:
             "has_shortened_urls": self._has_shortened_urls(text),
             "shortened_url_count": self._count_shortened_urls(text),
             "urgency_score": self._urgency_score(text),
+            "phishing_score": self._score_keywords(text, PHISHING_KEYWORDS),
+            "malware_score": self._score_keywords(text, MALWARE_KEYWORDS),
+            "marketing_score": self._score_keywords(text, MARKETING_KEYWORDS),
             "caps_ratio": self._caps_ratio(text),
             "exclamation_count": text.count("!"),
             "question_mark_count": text.count("?"),
@@ -72,6 +94,15 @@ class FeatureExtractor:
             "contains_phone_number": bool(re.search(r"\b\d{3}[-.]?\d{3}[-.]?\d{4}\b", text)),
             "contains_currency": bool(re.search(r"[$£€¥]\s*\d+", text)),
         }
+
+    def _score_keywords(self, text: str, keyword_dict: dict[str, float]) -> float:
+        """Compute normalized match density for a keyword dictionary."""
+        text_lower = text.lower()
+        total_weight = 0.0
+        for keyword, weight in keyword_dict.items():
+            if keyword in text_lower:
+                total_weight += weight
+        return min(round(total_weight / 3.0, 4), 1.0)
 
     def _count_urls(self, text: str) -> int:
         """Count all URLs in the text."""
@@ -98,18 +129,8 @@ class FeatureExtractor:
         return count
 
     def _urgency_score(self, text: str) -> float:
-        """
-        Score 0.0-1.0 based on urgency keyword density.
-        Higher = more urgency language detected.
-        """
-        text_lower = text.lower()
-        total_weight = 0.0
-        for keyword, weight in URGENCY_KEYWORDS.items():
-            if keyword in text_lower:
-                total_weight += weight
-
-        # Normalize to 0-1 range (cap at 3.0 total weight → 1.0)
-        return min(total_weight / 3.0, 1.0)
+        """Score 0.0-1.0 based on urgency keyword density."""
+        return self._score_keywords(text, URGENCY_KEYWORDS)
 
     def _caps_ratio(self, text: str) -> float:
         """Ratio of uppercase characters to total alphabetic characters."""

@@ -2,13 +2,8 @@
  * Classification Route — POST /api/v1/classify
  *
  * Core endpoint: receives email text, calls ML service for
- * classification + SHAP, calls Gemini for explanation, and
- * returns the full analysis result.
- *
- * Features:
- *  - Redis response caching (SHA-256 keyed)
- *  - Gemini LLM explanation generation
- *  - Structured response with timing metadata
+ * multi-class threat classification + SHAP, calls Gemini for explanation,
+ * increments Prometheus metrics, and returns the full analysis result.
  */
 
 import { Router } from "express";
@@ -20,6 +15,11 @@ import { geminiService } from "../services/geminiService.js";
 import { cacheGet, cacheSet } from "../utils/redis.js";
 import { getPrisma } from "../db/prisma.js";
 import { logger } from "../utils/logger.js";
+import {
+  predictionCounter,
+  predictionLatencyGauge,
+  riskScoreHistogram,
+} from "../utils/metrics.js";
 
 export const classifyRouter = Router();
 
@@ -56,7 +56,7 @@ classifyRouter.post("/", validate(classifySchema), async (req, res, next) => {
       return res.json({ ...cached, id: req.id, cached: true });
     }
 
-    // 2. Call ML service for classification + SHAP
+    // 2. Call ML service for multi-class classification + SHAP
     const mlResult = await mlService.classify(text, includeShap);
 
     // 3. Generate Gemini explanation (if requested and API key is configured)
@@ -65,6 +65,7 @@ classifyRouter.post("/", validate(classifySchema), async (req, res, next) => {
       try {
         explanation = await geminiService.generateExplanation({
           label: mlResult.label,
+          threatType: mlResult.threat_type || mlResult.label,
           confidence: mlResult.confidence,
           shapTokens: mlResult.shap_tokens,
           features: mlResult.features,
@@ -75,24 +76,41 @@ classifyRouter.post("/", validate(classifySchema), async (req, res, next) => {
       }
     }
 
-    // 4. Build response
+    const threatType = mlResult.threat_type || (mlResult.label === "spam" ? "marketing_spam" : "ham");
+    const riskScore = mlResult.risk_score || (mlResult.label === "spam" ? 75.0 : 10.0);
+    const riskLevel = mlResult.risk_level || (mlResult.label === "spam" ? "HIGH" : "LOW");
+
+    // 4. Update Prometheus metrics
+    predictionCounter.inc({
+      label: mlResult.label,
+      threat_type: threatType,
+      risk_level: riskLevel,
+    });
+    predictionLatencyGauge.set(mlResult.inference_time_ms || 12);
+    riskScoreHistogram.observe(riskScore);
+
+    // 5. Build unified response
     const response = {
       id: req.id,
       label: mlResult.label,
       confidence: mlResult.confidence,
+      threatType,
+      riskScore,
+      riskLevel,
+      probabilities: mlResult.probabilities || {},
       shapTokens: mlResult.shap_tokens || [],
       features: mlResult.features || {},
-      explanation: explanation,
+      explanation,
       modelVersion: mlResult.model_version,
       inferenceTimeMs: mlResult.inference_time_ms,
       cached: false,
       timestamp: new Date().toISOString(),
     };
 
-    // 5. Cache the result (1 hour TTL)
+    // 6. Cache the result (1 hour TTL)
     await cacheSet(cacheKey, response, 3600);
 
-    // 6. Log prediction to PostgreSQL via Prisma (if configured)
+    // 7. Log prediction to PostgreSQL via Prisma (if configured)
     const prisma = getPrisma();
     if (prisma) {
       prisma.prediction
