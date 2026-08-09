@@ -90,6 +90,10 @@ class TestSuspiciousAttachments:
         features = extractor.extract("Unzip the file archive.zip")
         assert features["suspicious_attachment_mentioned"] is True
 
+    def test_macro_document_mentioned(self):
+        features = extractor.extract("Review the financial report in statement.xlsm")
+        assert features["suspicious_attachment_mentioned"] is True
+
 
 class TestSpamEmail:
     """Integration test with realistic spam email."""

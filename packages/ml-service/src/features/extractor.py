@@ -11,9 +11,9 @@ from urllib.parse import urlparse
 
 # Common URL shortener domains
 SHORTENER_DOMAINS = {
-    "bit.ly", "tinyurl.com", "t.co", "goo.gl", "ow.ly", "is.gd",
+    "bit.ly", "tinyurl.com", "t.co", "goo.gl", "ow.ly", "is.gd", "v.gd",
     "buff.ly", "adf.ly", "bl.ink", "lnkd.in", "rb.gy", "cutt.ly",
-    "shorturl.at", "tiny.cc",
+    "shorturl.at", "tiny.cc", "clck.ru", "qr.ae", "linktr.ee", "s.id",
 }
 
 # Free email providers (often used in spam)
@@ -57,6 +57,7 @@ MARKETING_KEYWORDS = {
 DANGEROUS_EXTENSIONS = {
     ".exe", ".bat", ".cmd", ".scr", ".pif", ".com", ".vbs", ".js",
     ".wsh", ".wsf", ".msi", ".jar", ".zip", ".rar", ".7z", ".iso", ".docm",
+    ".xlsm", ".pptm", ".hta", ".apk", ".dmg",
 }
 
 
