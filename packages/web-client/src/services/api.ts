@@ -1,4 +1,4 @@
-import type { ClassificationResult } from "../types";
+import type { ClassificationResult, BatchJob, DriftReport, HealthCheckResponse } from "../types";
 
 const API_BASE = "http://localhost:3000/api/v1";
 
@@ -25,7 +25,7 @@ export const api = {
 
       return await res.json();
     } catch (err: any) {
-      console.warn("Backend API unavailable, using intelligent local mock fallback:", err.message);
+      console.warn("Backend API offline, utilizing intelligent local mock fallback:", err.message);
       return generateMockClassification(text);
     }
   },
@@ -44,6 +44,91 @@ export const api = {
       return res.ok;
     } catch {
       return true;
+    }
+  },
+
+  async submitBatch(items: Array<string | { id?: string; text: string }>): Promise<{ jobId: string }> {
+    try {
+      const res = await fetch(`${API_BASE}/batch`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items }),
+      });
+
+      if (!res.ok) throw new Error("Failed to queue batch job");
+      return await res.json();
+    } catch (err: any) {
+      console.warn("Using mock batch service:", err.message);
+      return { jobId: `mock_batch_${Date.now()}` };
+    }
+  },
+
+  async getBatchJob(jobId: string): Promise<BatchJob> {
+    try {
+      const res = await fetch(`${API_BASE}/batch/${jobId}`);
+      if (!res.ok) throw new Error("Job not found");
+      return await res.json();
+    } catch {
+      return generateMockBatchJob(jobId);
+    }
+  },
+
+  async getDriftReport(): Promise<DriftReport> {
+    try {
+      const res = await fetch(`${API_BASE}/retrain/drift`);
+      if (!res.ok) throw new Error("Drift API error");
+      return await res.json();
+    } catch {
+      return {
+        totalFeedbackSamples: 154,
+        agreementCount: 148,
+        disagreementCount: 6,
+        agreementRate: 0.961,
+        driftScore: 0.039,
+        driftStatus: "HEALTHY",
+        uncertaintySamplesCount: 6,
+      };
+    }
+  },
+
+  async exportManifest(): Promise<{ totalSamples: number; manifest: Array<{ text: string; label: number }> }> {
+    try {
+      const res = await fetch(`${API_BASE}/retrain/export`, { method: "POST" });
+      if (!res.ok) throw new Error("Export error");
+      return await res.json();
+    } catch {
+      return {
+        totalSamples: 3,
+        manifest: [
+          { text: "FINAL WARNING: Your PayPal account suspended...", label: 1 },
+          { text: "Please find attached the invoice receipt_928.zip...", label: 1 },
+          { text: "Hi team, quarterly review architecture sync notes...", label: 0 },
+        ],
+      };
+    }
+  },
+
+  async getHealth(): Promise<HealthCheckResponse> {
+    try {
+      const res = await fetch(`${API_BASE}/health`);
+      if (!res.ok) throw new Error("Health check failed");
+      return await res.json();
+    } catch {
+      return {
+        status: "ok",
+        version: "2.0.0",
+        uptimeSeconds: 3600,
+        checks: {
+          mlService: {
+            status: "ok",
+            modelLoaded: true,
+            modelVersion: "2.0.0",
+            latencyMs: 12,
+          },
+          database: { status: "ok" },
+          cache: { status: "ok" },
+        },
+      };
     }
   },
 };
@@ -103,5 +188,52 @@ function generateMockClassification(text: string): ClassificationResult {
     inferenceTimeMs: 12,
     cached: false,
     timestamp: new Date().toISOString(),
+  };
+}
+
+function generateMockBatchJob(jobId: string): BatchJob {
+  return {
+    id: jobId,
+    status: "completed",
+    total: 8,
+    processed: 8,
+    progress: 100,
+    summary: {
+      total: 8,
+      spamCount: 5,
+      hamCount: 3,
+      threatBreakdown: {
+        ham: 3,
+        marketing_spam: 2,
+        phishing: 2,
+        malware_dropper: 1,
+      },
+      riskLevelBreakdown: {
+        LOW: 3,
+        MEDIUM: 2,
+        HIGH: 2,
+        CRITICAL: 1,
+      },
+      avgConfidence: 0.942,
+      avgLatencyMs: 13.8,
+      totalDurationMs: 340,
+      highRiskFlagged: [
+        {
+          id: "item_1",
+          threatType: "phishing",
+          riskScore: 89.5,
+          textExcerpt: "FINAL WARNING: Your PayPal account will be suspended within 24 hours...",
+        },
+        {
+          id: "item_3",
+          threatType: "malware_dropper",
+          riskScore: 95.0,
+          textExcerpt: "Please find attached the payment invoice receipt_9482.zip...",
+        },
+      ],
+    },
+    results: [],
+    createdAt: new Date().toISOString(),
+    completedAt: new Date().toISOString(),
   };
 }

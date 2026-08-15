@@ -42,3 +42,73 @@ export interface ClassificationResult {
   cached: boolean;
   timestamp: string;
 }
+
+export interface BatchItemResult {
+  id: string;
+  textExcerpt: string;
+  label: string;
+  confidence: number;
+  threatType: string;
+  riskScore: number;
+  riskLevel: string;
+  inferenceTimeMs?: number;
+  error?: string;
+}
+
+export interface BatchJobSummary {
+  total: number;
+  spamCount: number;
+  hamCount: number;
+  threatBreakdown: Record<string, number>;
+  riskLevelBreakdown: Record<string, number>;
+  avgConfidence: number;
+  avgLatencyMs: number;
+  totalDurationMs?: number;
+  highRiskFlagged: Array<{
+    id: string;
+    threatType: string;
+    riskScore: number;
+    textExcerpt: string;
+  }>;
+}
+
+export interface BatchJob {
+  id: string;
+  status: "pending" | "processing" | "completed" | "failed";
+  total: number;
+  processed: number;
+  progress: number;
+  summary: BatchJobSummary;
+  results: BatchItemResult[];
+  error?: string | null;
+  createdAt: string;
+  completedAt?: string | null;
+}
+
+export interface DriftReport {
+  totalFeedbackSamples: number;
+  agreementCount?: number;
+  disagreementCount?: number;
+  agreementRate: number;
+  driftScore: number;
+  driftStatus: "HEALTHY" | "MONITOR" | "RETRAINING_RECOMMENDED";
+  uncertaintySamplesCount: number;
+  evaluatedAt?: string;
+  message?: string;
+}
+
+export interface HealthCheckResponse {
+  status: "ok" | "degraded" | "error";
+  version: string;
+  uptimeSeconds: number;
+  checks: {
+    mlService: {
+      status: string;
+      modelLoaded: boolean;
+      modelVersion: string;
+      latencyMs: number;
+    };
+    database: { status: string };
+    cache: { status: string };
+  };
+}

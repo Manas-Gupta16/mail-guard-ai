@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Header } from "./components/Header";
 import { HeroSection } from "./components/HeroSection";
 import { CategoriesGrid } from "./components/CategoriesGrid";
+import { BatchSection } from "./components/BatchSection";
+import { ObservabilitySection } from "./components/ObservabilitySection";
 import { CapabilitiesAccordion } from "./components/CapabilitiesAccordion";
 import { Footer } from "./components/Footer";
 import type { ClassificationResult } from "./types";
@@ -33,7 +35,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-[#fcfbf9] text-[#171717] selection:bg-indigo-600 selection:text-white">
-      {/* Fixed Header with Mix-Blend-Difference */}
+      {/* High-Contrast Glassmorphic Header */}
       <Header onScrollToSection={handleScrollToSection} />
 
       {/* Hero Section with Spam Analyzer & Wave Container */}
@@ -47,13 +49,19 @@ function App() {
         loading={loading}
       />
 
-      {/* Analysis History / Spam Categories Staggered Grid */}
+      {/* Analysis History / 4-Class Spam Categories Staggered Grid */}
       <CategoriesGrid onSelectSample={handleSelectSample} />
 
-      {/* Service Accordion (How the Model Works) */}
+      {/* Asynchronous Batch Processing Pipeline Section */}
+      <BatchSection />
+
+      {/* Observability & Model Drift Engine Section */}
+      <ObservabilitySection />
+
+      {/* Core Capabilities Service Accordion */}
       <CapabilitiesAccordion onExploreApi={() => handleScrollToSection("architecture")} />
 
-      {/* High-Contrast 5rem Radius Footer */}
+      {/* High-Contrast 5rem Radius Footer & API Playground */}
       <Footer />
     </div>
   );
