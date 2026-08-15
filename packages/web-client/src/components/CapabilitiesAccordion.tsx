@@ -100,7 +100,7 @@ export const CapabilitiesAccordion: React.FC<CapabilitiesAccordionProps> = ({ on
           </span>
 
           <h2 className="font-display text-4xl sm:text-5xl text-[#171717] tracking-tight leading-[1.05]">
-            Detection <br />
+            Core <br />
             <span className="italic font-display font-normal text-indigo-700">Capabilities.</span>
           </h2>
 
