@@ -1,0 +1,169 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-primary: #fcfbf9;
+    --bg-dark: #171717;
+    --accent: #4338ca;
+    --border-color: #e5e5e5;
+    --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  body {
+    background-color: var(--bg-primary);
+    color: var(--bg-dark);
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+/* Custom Typography Classes */
+.font-display {
+  font-family: 'Playfair Display', serif;
+}
+
+.font-body {
+  font-family: 'Inter', sans-serif;
+}
+
+.font-mono-tracked {
+  font-family: 'JetBrains Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.35em;
+}
+
+.font-mono-wide {
+  font-family: 'JetBrains Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.45em;
+}
+
+/* Transitions & Premium Easing */
+.transition-premium {
+  transition: all 500ms var(--ease-premium);
+}
+
+.transition-premium-slow {
+  transition: all 1000ms var(--ease-premium);
+}
+
+/* Background Mesh Animation (30s infinite rotation & scale) */
+@keyframes meshDrift {
+  0% {
+    transform: rotate(0deg) scale(1) translate(0px, 0px);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.15) translate(30px, -20px);
+  }
+  100% {
+    transform: rotate(360deg) scale(1) translate(0px, 0px);
+  }
+}
+
+.animate-mesh {
+  animation: meshDrift 30s linear infinite;
+}
+
+/* Button Pulse Animation (scale 1.02 with 20px indigo shadow loop) */
+@keyframes buttonPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(67, 56, 202, 0.4);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 10px 25px -3px rgba(67, 56, 202, 0.5), 0 0 20px 2px rgba(99, 102, 241, 0.3);
+  }
+}
+
+.animate-btn-pulse {
+  animation: buttonPulse 3s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+/* Nav Link Underline Expansion */
+.nav-link-grow {
+  position: relative;
+}
+
+.nav-link-grow::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0%;
+  height: 1px;
+  background-color: currentColor;
+  transition: width 350ms var(--ease-premium);
+}
+
+.nav-link-grow:hover::after {
+  width: 100%;
+}
+
+/* Wave Container Architecture */
+.wave-container {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 25vh;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.wave-curve {
+  width: 120%;
+  height: 200%;
+  background: #fcfbf9;
+  border-radius: 50% 50% 0 0;
+  transform: translate(-10%, 20%);
+  pointer-events: auto;
+}
+
+/* Intelligent Card Hover Effects */
+.card-hover-container {
+  transition: transform 500ms var(--ease-premium), box-shadow 500ms var(--ease-premium);
+}
+
+.card-hover-container:hover {
+  transform: translateY(-1rem);
+  box-shadow: 0 25px 50px -12px rgba(67, 56, 202, 0.12);
+}
+
+.card-inner-scale {
+  transition: transform 700ms var(--ease-premium);
+}
+
+.card-hover-container:hover .card-inner-scale {
+  transform: scale(1.1);
+}
+
+.action-pill-reveal {
+  opacity: 0;
+  transform: translateY(1rem);
+  transition: opacity 500ms var(--ease-premium), transform 500ms var(--ease-premium);
+}
+
+.card-hover-container:hover .action-pill-reveal {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Horizontal Line Draw-in on scroll */
+.line-draw {
+  height: 1px;
+  background-color: var(--border-color);
+  width: 100%;
+  transform-origin: left;
+}
+
+/* SHAP Token attribution badges */
+.shap-badge-spam {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.shap-badge-ham {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
