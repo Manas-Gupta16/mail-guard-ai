@@ -1,13 +1,13 @@
 # ============================================
-# Mail Guard AI — Docker Compose (Full Stack)
-# Run: docker compose -f infra/docker-compose.yml up --build
+# Mail Guard AI — Docker Compose (Root Entry)
+# Run: docker compose up --build
 # ============================================
 
 services:
   # ─── Python ML Service ─────────────────────────────────────────────
   ml-service:
     build:
-      context: ../packages/ml-service
+      context: ./packages/ml-service
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
@@ -17,7 +17,7 @@ services:
       - ML_MODEL_PATH=/app/models/distilbert-spam-v2
       - ML_USE_ONNX=true
     volumes:
-      - ../packages/ml-service/models:/app/models
+      - ./packages/ml-service/models:/app/models
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8000/health').raise_for_status()"]
@@ -28,7 +28,7 @@ services:
   # ─── Node.js API Gateway ───────────────────────────────────────────
   api-server:
     build:
-      context: ../packages/api-server
+      context: ./packages/api-server
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
@@ -53,7 +53,7 @@ services:
   # ─── React Frontend ────────────────────────────────────────────────
   web-client:
     build:
-      context: ../packages/web-client
+      context: ./packages/web-client
       dockerfile: Dockerfile
     ports:
       - "5173:80"
