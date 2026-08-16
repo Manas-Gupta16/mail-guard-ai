@@ -1,40 +1,26 @@
 # ============================================
 # Mail Guard AI — API Server Dockerfile
-# Multi-stage build for production
+# Multi-stage production container
 # ============================================
 
-# --- Stage 1: Builder ---
-FROM node:20-alpine AS builder
+FROM node:20-slim
 
 WORKDIR /app
 
-# Install dependencies
-COPY package.json package-lock.json* ./
-RUN npm ci --only=production
+# Install openssl for Prisma native binary support
+RUN apt-get update -y && apt-get install -y --no-install-recommends openssl curl && rm -rf /var/lib/apt/lists/*
 
-# --- Stage 2: Runtime ---
-FROM node:20-alpine AS runtime
+COPY package*.json ./
+RUN npm ci
 
-WORKDIR /app
-
-# Security: run as non-root user
-RUN addgroup --system app && adduser --system --ingroup app app
-
-# Copy dependencies and source
-COPY --from=builder /app/node_modules ./node_modules
-COPY package.json ./
 COPY src/ ./src/
 
-# Set ownership
-RUN chown -R app:app /app
-USER app
+# Generate Prisma database client
+RUN npx prisma generate --schema=src/db/schema.prisma
 
-# Expose port
 EXPOSE 3000
 
-# Health check
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/v1/health || exit 1
+  CMD curl -f http://localhost:3000/api/v1/health || exit 1
 
-# Start server
 CMD ["node", "src/index.js"]
