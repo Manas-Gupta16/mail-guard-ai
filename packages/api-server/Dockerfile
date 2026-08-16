@@ -10,8 +10,8 @@ WORKDIR /app
 # Install openssl for Prisma native binary support
 RUN apt-get update -y && apt-get install -y --no-install-recommends openssl curl && rm -rf /var/lib/apt/lists/*
 
-COPY package*.json ./
-RUN npm ci
+COPY package.json ./
+RUN npm install --no-package-lock
 
 COPY src/ ./src/
 

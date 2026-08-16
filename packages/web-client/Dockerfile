@@ -3,8 +3,9 @@ FROM node:20-slim AS build
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm install
+# Copy package.json only to ensure Linux AMD64 native binaries are resolved
+COPY package.json ./
+RUN npm install --no-package-lock
 
 COPY . .
 RUN npm run build
