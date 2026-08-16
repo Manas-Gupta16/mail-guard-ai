@@ -34,6 +34,7 @@ import { healthRouter } from "./routes/health.js";
 import { batchRouter } from "./routes/batch.js";
 import { retrainRouter } from "./routes/retrain.js";
 import { metricsRouter } from "./routes/metrics.js";
+import { emlRouter } from "./routes/eml.js";
 import { setupWebSocket } from "./websocket/handler.js";
 
 const app = express();
@@ -55,6 +56,7 @@ app.use(rateLimiter);
 const API_PREFIX = `/api/${process.env.API_VERSION || "v1"}`;
 
 app.use(`${API_PREFIX}/classify`, classifyRouter);
+app.use(`${API_PREFIX}/eml`, emlRouter);
 app.use(`${API_PREFIX}/feedback`, feedbackRouter);
 app.use(`${API_PREFIX}/health`, healthRouter);
 app.use(`${API_PREFIX}/batch`, batchRouter);

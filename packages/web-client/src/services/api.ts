@@ -1,4 +1,4 @@
-import type { ClassificationResult, BatchJob, DriftReport, HealthCheckResponse } from "../types";
+import type { ClassificationResult, BatchJob, DriftReport, HealthCheckResponse, EmlAnalysisResult } from "../types";
 
 const API_BASE = "http://localhost:3000/api/v1";
 
@@ -27,6 +27,22 @@ export const api = {
     } catch (err: any) {
       console.warn("Backend API offline, utilizing intelligent local mock fallback:", err.message);
       return generateMockClassification(text);
+    }
+  },
+
+  async analyzeEml(rawEml: string): Promise<EmlAnalysisResult> {
+    try {
+      const res = await fetch(`${API_BASE}/eml/analyze`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rawEml, includeShap: true, includeExplanation: true }),
+      });
+
+      if (!res.ok) throw new Error("Failed to analyze EML file");
+      return await res.json();
+    } catch (err: any) {
+      console.warn("Using mock EML analysis fallback:", err.message);
+      return generateMockEmlAnalysis(rawEml);
     }
   },
 
@@ -187,6 +203,43 @@ function generateMockClassification(text: string): ClassificationResult {
     modelVersion: "2.0.0",
     inferenceTimeMs: 12,
     cached: false,
+    timestamp: new Date().toISOString(),
+  };
+}
+
+function generateMockEmlAnalysis(rawEml: string): EmlAnalysisResult {
+  const isSpam = rawEml.toLowerCase().includes("suspended") || rawEml.toLowerCase().includes("verify") || rawEml.toLowerCase().includes("bit.ly");
+  return {
+    id: `eml_${Date.now()}`,
+    envelope: {
+      subject: isSpam ? "URGENT: Verify Your Account Security" : "Quarterly Sprint Review & Architecture Sync",
+      from: isSpam ? "Security Alert <security@paypal-auth-verify.com>" : "Alex Morris <alex.morris@enterprise.org>",
+      to: "target.user@enterprise.org",
+      date: new Date().toUTCString(),
+      messageId: `<auth_${Date.now()}@relay.net>`,
+      replyTo: isSpam ? "security@paypal-auth-verify.com" : "alex.morris@enterprise.org",
+    },
+    authentication: {
+      spf: isSpam
+        ? { status: "FAIL", severity: "CRITICAL", details: "Sender IP rejected by domain SPF policy" }
+        : { status: "PASS", severity: "SAFE", details: "Sender IP authorized by domain SPF record" },
+      dkim: isSpam
+        ? { status: "FAIL", severity: "CRITICAL", details: "DKIM signature invalid or modified in transit" }
+        : { status: "VALID", severity: "SAFE", details: "Cryptographic domain signature verified" },
+      dmarc: isSpam
+        ? { status: "FAIL", severity: "CRITICAL", details: "DMARC policy alignment failed" }
+        : { status: "PASS", severity: "SAFE", details: "DMARC policy alignment passed" },
+      overallScore: isSpam ? 15 : 100,
+    },
+    relayHops: {
+      totalHops: 2,
+      originatingIp: isSpam ? "198.51.100.44" : "192.0.2.1",
+      hops: [
+        { hopNumber: 1, fromServer: "mail.outbound-relay.net", byServer: "mx.google.com", ip: "198.51.100.44" },
+        { hopNumber: 2, fromServer: "smtp.corp-internal.com", byServer: "mail.outbound-relay.net", ip: "10.0.0.12" },
+      ],
+    },
+    classification: generateMockClassification(rawEml),
     timestamp: new Date().toISOString(),
   };
 }

@@ -43,6 +43,46 @@ export interface ClassificationResult {
   timestamp: string;
 }
 
+export interface AuthHeaderStatus {
+  status: "PASS" | "FAIL" | "SOFTFAIL" | "NEUTRAL" | "NONE" | "VALID";
+  severity: "SAFE" | "WARNING" | "CRITICAL" | "INFO";
+  details: string;
+}
+
+export interface EmailEnvelope {
+  subject: string;
+  from: string;
+  to: string;
+  date: string;
+  messageId: string;
+  replyTo: string;
+}
+
+export interface RelayHop {
+  hopNumber: number;
+  fromServer: string;
+  byServer: string;
+  ip: string | null;
+}
+
+export interface EmlAnalysisResult {
+  id: string;
+  envelope: EmailEnvelope;
+  authentication: {
+    spf: AuthHeaderStatus;
+    dkim: AuthHeaderStatus;
+    dmarc: AuthHeaderStatus;
+    overallScore: number;
+  };
+  relayHops: {
+    totalHops: number;
+    originatingIp: string | null;
+    hops: RelayHop[];
+  };
+  classification: ClassificationResult;
+  timestamp: string;
+}
+
 export interface BatchItemResult {
   id: string;
   textExcerpt: string;

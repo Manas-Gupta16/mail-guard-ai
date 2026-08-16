@@ -152,4 +152,45 @@ describe("API Gateway Routes", () => {
       expect(res.body).toHaveProperty("agreementRate");
     });
   });
+
+  describe("POST /api/v1/eml/analyze", () => {
+    it("should parse raw EML, extract SPF/DKIM authentication, and classify body", async () => {
+      const sampleEml = `From: Security Team <security@paypal-auth-verify.com>
+To: target.user@enterprise.org
+Subject: URGENT: Verify Your PayPal Account
+Date: Sun, 16 Aug 2026 12:00:00 +0000
+Message-ID: <auth-9842@paypal-auth-verify.com>
+Received-SPF: pass (google.com: domain of security@paypal-auth-verify.com designates 192.0.2.1 as permitted sender)
+Authentication-Results: mx.google.com; dkim=pass header.i=@paypal-auth-verify.com; dmarc=pass
+Received: from mail.paypal-auth-verify.com [192.0.2.1] by mx.google.com with ESMTP; Sun, 16 Aug 2026 12:00:00 +0000
+
+FINAL WARNING: Your PayPal account has been suspended due to suspicious activity. Verify identity at http://bit.ly/paypal-sec`;
+
+      const res = await request(app)
+        .post("/api/v1/eml/analyze")
+        .send({ rawEml: sampleEml, includeExplanation: false });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty("envelope");
+      expect(res.body.envelope.subject).toBe("URGENT: Verify Your PayPal Account");
+      expect(res.body.envelope.from).toBe("Security Team <security@paypal-auth-verify.com>");
+      expect(res.body).toHaveProperty("authentication");
+      expect(res.body.authentication.spf.status).toBe("PASS");
+      expect(res.body.authentication.dkim.status).toBe("VALID");
+      expect(res.body.authentication.dmarc.status).toBe("PASS");
+      expect(res.body).toHaveProperty("relayHops");
+      expect(res.body.relayHops.totalHops).toBe(1);
+      expect(res.body).toHaveProperty("classification");
+      expect(res.body.classification).toHaveProperty("label");
+      expect(res.body.classification).toHaveProperty("riskScore");
+    });
+
+    it("should reject invalid short EML with 400", async () => {
+      const res = await request(app)
+        .post("/api/v1/eml/analyze")
+        .send({ rawEml: "hi" });
+
+      expect(res.status).toBe(400);
+    });
+  });
 });
