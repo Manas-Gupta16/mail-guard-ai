@@ -83,6 +83,29 @@ export interface EmlAnalysisResult {
   timestamp: string;
 }
 
+export interface UrlThreatReport {
+  originalUrl: string;
+  finalUrl: string;
+  finalDomain: string;
+  protocol: string;
+  redirectHops: string[];
+  totalHops: number;
+  isShortened: boolean;
+  riskScore: number;
+  riskLevel: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+  reasons: string[];
+  scannedAt: string;
+}
+
+export interface UrlScanSummary {
+  id?: string;
+  resultType?: string;
+  totalUrlsFound: number;
+  hasShortenedUrls: boolean;
+  hasMaliciousUrls: boolean;
+  urls: UrlThreatReport[];
+}
+
 export interface BatchItemResult {
   id: string;
   textExcerpt: string;

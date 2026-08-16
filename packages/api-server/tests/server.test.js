@@ -193,4 +193,46 @@ FINAL WARNING: Your PayPal account has been suspended due to suspicious activity
       expect(res.status).toBe(400);
     });
   });
+
+  describe("POST /api/v1/url/sandbox", () => {
+    it("should trace single URL and return domain reputation analysis", async () => {
+      const res = await request(app)
+        .post("/api/v1/url/sandbox")
+        .send({ url: "http://bit.ly/paypal-security-update" });
+
+      expect(res.status).toBe(200);
+      expect(res.body.resultType).toBe("single_url");
+      expect(res.body).toHaveProperty("originalUrl");
+      expect(res.body).toHaveProperty("finalDomain");
+      expect(res.body).toHaveProperty("isShortened");
+      expect(res.body.isShortened).toBe(true);
+      expect(res.body).toHaveProperty("riskScore");
+      expect(res.body).toHaveProperty("riskLevel");
+      expect(Array.isArray(res.body.reasons)).toBe(true);
+    });
+
+    it("should extract and scan multiple URLs from email body text", async () => {
+      const text = "Verify your account at http://bit.ly/auth and check rewards at http://tinyurl.com/win-prize";
+      const res = await request(app)
+        .post("/api/v1/url/sandbox")
+        .send({ text });
+
+      expect(res.status).toBe(200);
+      expect(res.body.resultType).toBe("text_urls");
+      expect(res.body.totalUrlsFound).toBe(2);
+      expect(res.body.hasShortenedUrls).toBe(true);
+      expect(Array.isArray(res.body.urls)).toBe(true);
+      expect(res.body.urls.length).toBe(2);
+    });
+
+    it("should return empty scan if text has no URLs", async () => {
+      const res = await request(app)
+        .post("/api/v1/url/sandbox")
+        .send({ text: "Hello team, let us meet tomorrow." });
+
+      expect(res.status).toBe(200);
+      expect(res.body.totalUrlsFound).toBe(0);
+      expect(res.body.urls.length).toBe(0);
+    });
+  });
 });

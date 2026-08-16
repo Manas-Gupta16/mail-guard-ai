@@ -1,4 +1,4 @@
-import type { ClassificationResult, BatchJob, DriftReport, HealthCheckResponse, EmlAnalysisResult } from "../types";
+import type { ClassificationResult, BatchJob, DriftReport, HealthCheckResponse, EmlAnalysisResult, UrlScanSummary, UrlThreatReport } from "../types";
 
 const API_BASE = "http://localhost:3000/api/v1";
 
@@ -43,6 +43,22 @@ export const api = {
     } catch (err: any) {
       console.warn("Using mock EML analysis fallback:", err.message);
       return generateMockEmlAnalysis(rawEml);
+    }
+  },
+
+  async scanUrlSandbox(payload: { url?: string; text?: string }): Promise<UrlScanSummary> {
+    try {
+      const res = await fetch(`${API_BASE}/url/sandbox`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error("Failed to inspect URL sandbox");
+      return await res.json();
+    } catch (err: any) {
+      console.warn("Using mock URL sandbox fallback:", err.message);
+      return generateMockUrlScan(payload.text || payload.url || "");
     }
   },
 
@@ -241,6 +257,37 @@ function generateMockEmlAnalysis(rawEml: string): EmlAnalysisResult {
     },
     classification: generateMockClassification(rawEml),
     timestamp: new Date().toISOString(),
+  };
+}
+
+function generateMockUrlScan(text: string): UrlScanSummary {
+  const urlRegex = /https?:\/\/[^\s<>"`{}|\\^~\[\]]+/gi;
+  const rawUrls = text.match(urlRegex) || ["http://bit.ly/paypal-security-update"];
+  const urls: UrlThreatReport[] = rawUrls.map((u) => {
+    const isShortened = u.includes("bit.ly") || u.includes("tinyurl");
+    const isSuspicious = isShortened || u.includes("verify") || u.includes("security") || u.includes("btc");
+    return {
+      originalUrl: u,
+      finalUrl: isShortened ? "https://paypal-security-auth-update.xyz/login" : u,
+      finalDomain: isShortened ? "paypal-security-auth-update.xyz" : "enterprise.org",
+      protocol: "https:",
+      redirectHops: isShortened ? [u, "https://paypal-security-auth-update.xyz/login"] : [u],
+      totalHops: isShortened ? 1 : 0,
+      isShortened,
+      riskScore: isSuspicious ? 92 : 12,
+      riskLevel: isSuspicious ? "CRITICAL" : "LOW",
+      reasons: isSuspicious
+        ? ["Shortened link cloaks malicious destination", "Uses high-abuse top-level domain (.xyz)", "Brand impersonation detected for 'paypal'"]
+        : ["Legitimate domain matches standard safety reputation"],
+      scannedAt: new Date().toISOString(),
+    };
+  });
+
+  return {
+    totalUrlsFound: urls.length,
+    hasShortenedUrls: urls.some((u) => u.isShortened),
+    hasMaliciousUrls: urls.some((u) => u.riskLevel === "CRITICAL" || u.riskLevel === "HIGH"),
+    urls,
   };
 }
 

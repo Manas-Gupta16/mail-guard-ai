@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
-import { Sparkles, ShieldAlert, ShieldCheck, Zap, UploadCloud, FileText, CheckCircle2, ThumbsUp, ThumbsDown, Shield, Server, ArrowRight } from "lucide-react";
-import type { ClassificationResult, EmlAnalysisResult } from "../types";
+import { Sparkles, ShieldAlert, ShieldCheck, Zap, UploadCloud, FileText, CheckCircle2, ThumbsUp, ThumbsDown, Shield, Link2, ExternalLink, AlertTriangle } from "lucide-react";
+import type { ClassificationResult, EmlAnalysisResult, UrlScanSummary } from "../types";
 import { api } from "../services/api";
 
 const PRESET_MESSAGES = [
@@ -45,6 +45,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   const [inputMode, setInputMode] = useState<"text" | "eml">("text");
   const [inputText, setInputText] = useState(PRESET_MESSAGES[0].text);
   const [emlResult, setEmlResult] = useState<EmlAnalysisResult | null>(null);
+  const [urlScanResult, setUrlScanResult] = useState<UrlScanSummary | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [feedbackRecorded, setFeedbackRecorded] = useState(false);
   const [submittingFeedback, setSubmittingFeedback] = useState(false);
@@ -57,6 +58,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     setFeedbackRecorded(false);
 
     try {
+      // 1. Scan embedded URLs in sandbox if any exist
+      if (inputText.includes("http://") || inputText.includes("https://")) {
+        const urlReport = await api.scanUrlSandbox({ text: inputText });
+        setUrlScanResult(urlReport);
+      } else {
+        setUrlScanResult(null);
+      }
+
+      // 2. Classify text or EML
       if (inputMode === "eml") {
         const emlData = await api.analyzeEml(inputText);
         setEmlResult(emlData);
@@ -118,7 +128,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 border border-[#e5e5e5] shadow-xs mb-6 backdrop-blur-sm">
           <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
           <span className="font-mono-tracked text-[11px] text-[#171717] font-semibold">
-            DISTILBERT ONNX + SPF/DKIM PARSER + GEMINI 2.5
+            DISTILBERT ONNX + URL SANDBOX + SPF/DKIM PARSER
           </span>
         </div>
 
@@ -128,7 +138,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         </h1>
 
         <p className="font-body text-base md:text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed mb-8">
-          An editorial threat intelligence analyzer providing deep semantic classification, authentication header parsing, and mathematical explainability.
+          An editorial threat intelligence analyzer providing deep semantic classification, live URL sandbox uncloaking, and authentication header auditing.
         </p>
 
         {/* Input Mode Selector Tabs */}
@@ -234,7 +244,66 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           </div>
         </div>
 
-        {/* EML Authentication & Relay Hop Security Card (when EML parsed) */}
+        {/* Live URL Sandbox & Threat Intelligence Card */}
+        {urlScanResult && urlScanResult.urls.length > 0 && (
+          <div className="w-full max-w-3xl mt-6 p-6 rounded-3xl bg-white border border-[#e5e5e5] shadow-xl text-left transition-premium space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#f0f0f0]">
+              <div className="flex items-center gap-2">
+                <Link2 className="w-5 h-5 text-indigo-700" />
+                <h4 className="font-display text-lg font-bold text-[#171717]">
+                  Live URL Sandbox & Redirect Cloaking Tracer ({urlScanResult.totalUrlsFound} link{urlScanResult.totalUrlsFound > 1 ? "s" : ""} scanned)
+                </h4>
+              </div>
+              <span className={`px-2.5 py-0.5 rounded-full font-mono text-[10px] font-bold ${
+                urlScanResult.hasMaliciousUrls ? "bg-rose-100 text-rose-800" : "bg-emerald-100 text-emerald-800"
+              }`}>
+                {urlScanResult.hasMaliciousUrls ? "[MALICIOUS DESTINATIONS DETECTED]" : "[LINKS VERIFIED SAFE]"}
+              </span>
+            </div>
+
+            <div className="space-y-3">
+              {urlScanResult.urls.map((u, idx) => (
+                <div key={idx} className={`p-4 rounded-2xl border text-xs font-mono space-y-2 ${
+                  u.riskLevel === "CRITICAL" || u.riskLevel === "HIGH"
+                    ? "bg-rose-50/40 border-rose-200"
+                    : "bg-[#fcfbf9] border-[#e5e5e5]"
+                }`}>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-neutral-400">ORIGINAL LINK:</span>
+                      <span className="font-bold text-[#171717]">{u.originalUrl}</span>
+                      {u.isShortened && (
+                        <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">
+                          [SHORTENED]
+                        </span>
+                      )}
+                    </div>
+                    <span className={`font-bold ${u.riskScore > 60 ? "text-rose-600" : "text-emerald-600"}`}>
+                      RISK {u.riskScore}/100 ({u.riskLevel})
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 border-t border-neutral-200/60">
+                    <div className="flex items-center gap-2">
+                      <span className="text-neutral-400">UNCLOAKED DESTINATION:</span>
+                      <span className="font-bold text-indigo-700 truncate max-w-sm">{u.finalUrl}</span>
+                    </div>
+                    <span className="text-neutral-500 text-[11px]">{u.totalHops} redirect hop{u.totalHops !== 1 ? "s" : ""}</span>
+                  </div>
+
+                  {u.reasons && u.reasons.length > 0 && (
+                    <div className="pt-1 text-[11px] text-neutral-600">
+                      <span className="text-neutral-400 font-bold mr-1">THREAT SIGNALS:</span>
+                      {u.reasons.join(" • ")}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* EML Authentication & Relay Hop Security Card */}
         {emlResult && (
           <div className="w-full max-w-3xl mt-6 p-6 rounded-3xl bg-white border border-[#e5e5e5] shadow-xl text-left transition-premium space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#f0f0f0]">
@@ -432,7 +501,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             className="animate-btn-pulse bg-[#4338ca] text-white px-8 py-4 rounded-full font-mono-tracked text-xs font-bold shadow-xl hover:bg-indigo-800 transition-premium cursor-pointer flex items-center gap-3 active:scale-95"
           >
             <Zap className="w-4 h-4 text-indigo-200 fill-indigo-200" />
-            {loading ? "PARSING HEADERS & GRAPH..." : inputMode === "eml" ? "ANALYZE EML HEADERS" : "ANALYZE MESSAGE"}
+            {loading ? "SANDBOXING URLS & MODEL..." : inputMode === "eml" ? "ANALYZE EML & URLS" : "ANALYZE MESSAGE"}
           </button>
         </div>
       </div>
