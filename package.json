@@ -1,0 +1,16 @@
+{
+  "name": "mail-guard-ai",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Mail Guard AI — Enterprise Email Threat Detection & Explainable AI Gateway",
+  "scripts": {
+    "dev": "concurrently -n \"API,WEB\" -c \"bgBlue.bold,bgMagenta.bold\" \"npm run dev --prefix packages/api-server\" \"npm run dev --prefix packages/web-client\"",
+    "dev:all": "concurrently -n \"API,WEB,ML\" -c \"bgBlue.bold,bgMagenta.bold,bgGreen.bold\" \"npm run dev --prefix packages/api-server\" \"npm run dev --prefix packages/web-client\" \"cd packages/ml-service && uvicorn src.api.main:app --reload --port 8000\"",
+    "build": "npm run build --prefix packages/web-client",
+    "test:api": "npm test --prefix packages/api-server",
+    "test:ml": "cd packages/ml-service && pytest"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

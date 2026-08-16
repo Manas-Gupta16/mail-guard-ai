@@ -106,7 +106,7 @@ export const batchService = {
           const itemId = (typeof item === "object" && item.id) ? item.id : `item_${i + idx + 1}`;
 
           try {
-            const pred = await mlService.classify(text, { includeShap: false });
+            const pred = await mlService.classifyWithFallback(text, false);
 
             let explanation = null;
             if (options.includeExplanation && (pred.threat_type === "phishing" || pred.threat_type === "malware_dropper")) {
