@@ -17,13 +17,24 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from datasets import Dataset
-from transformers import (
-    AutoModelForSequenceClassification,
-    AutoTokenizer,
-    Trainer,
-    TrainingArguments,
-)
+
+try:
+    from datasets import Dataset
+except ImportError:
+    Dataset = None  # type: ignore
+
+try:
+    from transformers import (
+        AutoModelForSequenceClassification,
+        AutoTokenizer,
+        Trainer,
+        TrainingArguments,
+    )
+except ImportError:
+    AutoModelForSequenceClassification = None  # type: ignore
+    AutoTokenizer = None  # type: ignore
+    Trainer = None  # type: ignore
+    TrainingArguments = None  # type: ignore
 
 
 def compute_metrics(eval_pred):
@@ -62,6 +73,11 @@ def main(
         learning_rate: Learning rate for AdamW
         max_length: Max token sequence length
     """
+    if Dataset is None or Trainer is None:
+        raise ImportError(
+            "Training dependencies not found! Please run: pip install datasets accelerate optimum[onnxruntime]"
+        )
+
     print("🚀 Mail Guard AI — Model Training\n")
     print(f"  Base model: {model_name}")
     print(f"  Epochs: {epochs}")
