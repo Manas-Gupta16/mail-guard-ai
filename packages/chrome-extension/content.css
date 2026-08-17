@@ -1,0 +1,242 @@
+/* Mail Guard AI — Chrome Extension Injected Styles */
+
+.mailguard-inspect-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  background: linear-gradient(135deg, #4338ca 0%, #3730a3 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 9999px !important;
+  padding: 6px 14px !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.05em !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 12px rgba(67, 56, 202, 0.25) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  margin: 4px 8px !important;
+  z-index: 9999 !important;
+}
+
+.mailguard-inspect-btn:hover {
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 16px rgba(67, 56, 202, 0.35) !important;
+}
+
+.mailguard-icon {
+  width: 13px !important;
+  height: 13px !important;
+  stroke: #ffffff !important;
+}
+
+.mailguard-spinner {
+  width: 12px !important;
+  height: 12px !important;
+  border: 2px solid rgba(255, 255, 255, 0.3) !important;
+  border-top-color: #ffffff !important;
+  border-radius: 50% !important;
+  animation: mailguard-spin 0.6s linear infinite !important;
+}
+
+@keyframes mailguard-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Threat Banner Overlay ─────────────────────────────────────── */
+.mailguard-banner {
+  margin: 12px 16px 20px 16px !important;
+  border-radius: 16px !important;
+  padding: 16px 20px !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+  animation: mailguard-slide-down 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  z-index: 99999 !important;
+}
+
+@keyframes mailguard-slide-down {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.mailguard-banner-danger {
+  background: #fff8f8 !important;
+  border: 1px solid #fca5a5 !important;
+}
+
+.mailguard-banner-safe {
+  background: #f6fbf8 !important;
+  border: 1px solid #86efac !important;
+}
+
+.mailguard-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+  padding-bottom: 10px !important;
+}
+
+.mailguard-title-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.mailguard-badge {
+  font-family: monospace !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  padding: 3px 8px !important;
+  border-radius: 6px !important;
+  letter-spacing: 0.05em !important;
+}
+
+.badge-danger {
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+}
+
+.badge-safe {
+  background: #dcfce7 !important;
+  color: #166534 !important;
+}
+
+.mailguard-title-group h3 {
+  margin: 0 !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: #171717 !important;
+}
+
+.mailguard-metrics {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  font-family: monospace !important;
+  font-size: 11px !important;
+  color: #525252 !important;
+}
+
+.mailguard-close-btn {
+  background: none !important;
+  border: none !important;
+  color: #a3a3a3 !important;
+  font-size: 14px !important;
+  cursor: pointer !important;
+  padding: 4px 6px !important;
+  border-radius: 4px !important;
+}
+
+.mailguard-close-btn:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+  color: #171717 !important;
+}
+
+.mailguard-reasoning {
+  padding: 10px 0 !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+.mailguard-label {
+  display: block !important;
+  font-family: monospace !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  color: #4338ca !important;
+  margin-bottom: 4px !important;
+}
+
+.mailguard-reasoning p {
+  margin: 0 !important;
+  font-size: 12px !important;
+  color: #374151 !important;
+  font-style: italic !important;
+  line-height: 1.5 !important;
+}
+
+.mailguard-shap {
+  padding: 8px 0 !important;
+}
+
+.mailguard-tokens {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+  margin-top: 4px !important;
+}
+
+.mailguard-token {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  font-family: monospace !important;
+  font-size: 11px !important;
+  padding: 2px 8px !important;
+  border-radius: 4px !important;
+}
+
+.mailguard-token-spam {
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+}
+
+.mailguard-token-ham {
+  background: #e0e7ff !important;
+  color: #3730a3 !important;
+  border: 1px solid #c7d2fe !important;
+}
+
+.mailguard-token em {
+  font-size: 9px !important;
+  opacity: 0.8 !important;
+}
+
+.mailguard-footer {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding-top: 8px !important;
+}
+
+.mailguard-feedback-prompt {
+  font-family: monospace !important;
+  font-size: 10px !important;
+  color: #737373 !important;
+}
+
+.mailguard-fb-btn {
+  background: #ffffff !important;
+  border: 1px solid #e5e5e5 !important;
+  border-radius: 20px !important;
+  padding: 3px 10px !important;
+  font-size: 11px !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.mailguard-fb-btn:hover {
+  transform: scale(1.03) !important;
+}
+
+.fb-spam:hover {
+  background: #fef2f2 !important;
+  border-color: #fca5a5 !important;
+  color: #991b1b !important;
+}
+
+.fb-safe:hover {
+  background: #f0fdf4 !important;
+  border-color: #86efac !important;
+  color: #166534 !important;
+}
+
+.mailguard-fb-status {
+  font-family: monospace !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  color: #16a34a !important;
+}

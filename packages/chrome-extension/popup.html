@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mail Guard AI — Quick Threat Inspector</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Header -->
+    <header class="popup-header">
+      <div class="brand">
+        <div class="logo-shield">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div>
+          <h1>Mail Guard <em>AI</em></h1>
+          <span class="version-tag">V2.0 • DISTILBERT ONNX</span>
+        </div>
+      </div>
+      <div id="status-pill" class="status-pill status-online">ONLINE</div>
+    </header>
+
+    <!-- Quick Scan Input -->
+    <main class="popup-main">
+      <div class="input-card">
+        <label for="inspect-text" class="input-label">[QUICK INSPECT EMAIL TEXT OR LINK]</label>
+        <textarea id="inspect-text" rows="4" placeholder="Paste email text, SMS alert, or URL to inspect threat level..."></textarea>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-row">
+        <button id="scan-active-tab-btn" class="btn-secondary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          Scan Active Mailbox
+        </button>
+        <button id="inspect-btn" class="btn-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+          Inspect
+        </button>
+      </div>
+
+      <!-- Result Container -->
+      <div id="result-card" class="result-card hidden">
+        <div class="result-header">
+          <div>
+            <span id="res-threat-type" class="threat-badge">[THREAT]</span>
+            <h3 id="res-verdict">Threat Identified</h3>
+          </div>
+          <div class="risk-meter">
+            <span class="risk-num" id="res-risk-score">89.5</span>
+            <span class="risk-denom">/ 100</span>
+          </div>
+        </div>
+
+        <p id="res-explanation" class="res-explanation"></p>
+
+        <div class="shap-section">
+          <span class="shap-title">[SHAP ATTRIBUTION TOKENS]</span>
+          <div id="res-tokens" class="tokens-wrap"></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer Settings -->
+    <footer class="popup-footer">
+      <div class="gateway-status">
+        <span class="dot"></span>
+        <span id="gateway-label">Gateway: http://localhost:3000</span>
+      </div>
+      <a href="http://localhost:5173" target="_blank" class="web-link">Open Full Dashboard ↗</a>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

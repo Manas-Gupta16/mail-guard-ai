@@ -64,20 +64,20 @@ export const Footer: React.FC = () => {
                 <span className="text-[10px] text-neutral-500">REST</span>
               </li>
               <li className="flex items-center justify-between hover:text-indigo-300 transition-colors">
+                <span>POST /api/v1/eml/analyze</span>
+                <span className="text-[10px] text-neutral-500">EML</span>
+              </li>
+              <li className="flex items-center justify-between hover:text-indigo-300 transition-colors">
+                <span>POST /api/v1/url/sandbox</span>
+                <span className="text-[10px] text-neutral-500">URL</span>
+              </li>
+              <li className="flex items-center justify-between hover:text-indigo-300 transition-colors">
                 <span>POST /api/v1/batch</span>
                 <span className="text-[10px] text-neutral-500">ASYNC</span>
               </li>
               <li className="flex items-center justify-between hover:text-indigo-300 transition-colors">
-                <span>GET /api/v1/retrain/drift</span>
-                <span className="text-[10px] text-neutral-500">MLOPS</span>
-              </li>
-              <li className="flex items-center justify-between hover:text-indigo-300 transition-colors">
-                <span>GET /metrics</span>
-                <span className="text-[10px] text-neutral-500">PROMETHEUS</span>
-              </li>
-              <li className="flex items-center justify-between hover:text-indigo-300 transition-colors">
-                <span>GET /api/v1/health</span>
-                <span className="text-[10px] text-neutral-500">PROBE</span>
+                <span>CHROME EXTENSION</span>
+                <span className="text-[10px] text-indigo-400 font-bold">GMAIL V3</span>
               </li>
             </ul>
           </div>
