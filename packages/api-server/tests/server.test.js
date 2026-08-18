@@ -235,4 +235,42 @@ FINAL WARNING: Your PayPal account has been suspended due to suspicious activity
       expect(res.body.urls.length).toBe(0);
     });
   });
+
+  describe("POST /api/v1/report/pdf", () => {
+    it("should generate executive forensic threat HTML/PDF audit report", async () => {
+      const payload = {
+        id: "INC-TEST-9921",
+        classification: {
+          label: "spam",
+          confidence: 0.96,
+          threatType: "phishing",
+          riskScore: 89.5,
+          riskLevel: "CRITICAL",
+          shapTokens: [{ token: "verify", score: 0.082 }],
+          explanation: "Critical phishing incident impersonating financial entity.",
+        },
+        envelope: {
+          subject: "URGENT: Account Restricted",
+          from: "security@paypal-auth.com",
+        },
+        authentication: {
+          spf: { status: "FAIL" },
+          dkim: { status: "FAIL" },
+          dmarc: { status: "FAIL" },
+          overallScore: 15,
+        },
+      };
+
+      const res = await request(app)
+        .post("/api/v1/report/pdf")
+        .send(payload);
+
+      expect(res.status).toBe(200);
+      expect(res.headers["content-type"]).toContain("text/html");
+      expect(res.text).toContain("Mail Guard");
+      expect(res.text).toContain("INC-TEST-9921");
+      expect(res.text).toContain("PHISHING");
+      expect(res.text).toContain("Critical phishing incident");
+    });
+  });
 });

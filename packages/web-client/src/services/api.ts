@@ -140,6 +140,28 @@ export const api = {
     }
   },
 
+  async downloadPdfReport(payload: any): Promise<void> {
+    try {
+      const res = await fetch(`${API_BASE}/report/pdf`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error("Report download failed");
+      const htmlText = await res.text();
+      const printWindow = window.open("", "_blank");
+      if (printWindow) {
+        printWindow.document.write(htmlText);
+        printWindow.document.close();
+        setTimeout(() => printWindow.print(), 500);
+      }
+    } catch (err: any) {
+      console.warn("Using local print fallback:", err.message);
+      window.print();
+    }
+  },
+
   async getHealth(): Promise<HealthCheckResponse> {
     try {
       const res = await fetch(`${API_BASE}/health`);

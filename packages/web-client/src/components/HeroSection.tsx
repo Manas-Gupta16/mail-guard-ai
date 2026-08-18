@@ -458,35 +458,53 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               </div>
             </div>
 
-            {/* Human-in-the-Loop Feedback Controls */}
+            {/* Human-in-the-Loop Feedback Controls & PDF Export */}
             <div className="pt-3 border-t border-[#f0f0f0] flex flex-col sm:flex-row items-center justify-between gap-3">
-              <span className="font-mono text-[11px] text-neutral-500">
-                Was this verdict accurate? Feed active learning:
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-[11px] text-neutral-500">
+                  Feedback:
+                </span>
 
-              {feedbackRecorded ? (
-                <div className="flex items-center gap-1.5 text-xs font-mono text-emerald-600 font-bold">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  FEEDBACK RECORDED IN POSTGRESQL!
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleFeedback("spam")}
-                    disabled={submittingFeedback}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-rose-200 hover:border-rose-400 bg-rose-50/60 text-xs font-mono text-rose-700 cursor-pointer transition-colors"
-                  >
-                    <ThumbsDown className="w-3 h-3" /> Flag as Spam
-                  </button>
-                  <button
-                    onClick={() => handleFeedback("ham")}
-                    disabled={submittingFeedback}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-emerald-200 hover:border-emerald-400 bg-emerald-50/60 text-xs font-mono text-emerald-700 cursor-pointer transition-colors"
-                  >
-                    <ThumbsUp className="w-3 h-3" /> Confirm Safe
-                  </button>
-                </div>
-              )}
+                {feedbackRecorded ? (
+                  <div className="flex items-center gap-1.5 text-xs font-mono text-emerald-600 font-bold">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    RECORDED!
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleFeedback("spam")}
+                      disabled={submittingFeedback}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-rose-200 hover:border-rose-400 bg-rose-50/60 text-xs font-mono text-rose-700 cursor-pointer transition-colors"
+                    >
+                      <ThumbsDown className="w-3 h-3" /> Spam
+                    </button>
+                    <button
+                      onClick={() => handleFeedback("ham")}
+                      disabled={submittingFeedback}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-emerald-200 hover:border-emerald-400 bg-emerald-50/60 text-xs font-mono text-emerald-700 cursor-pointer transition-colors"
+                    >
+                      <ThumbsUp className="w-3 h-3" /> Safe
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <button
+                onClick={() => {
+                  api.downloadPdfReport({
+                    id: result.id,
+                    classification: result,
+                    envelope: emlResult?.envelope,
+                    authentication: emlResult?.authentication,
+                    relayHops: emlResult?.relayHops,
+                  });
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-indigo-200 hover:border-indigo-500 bg-indigo-50/60 text-xs font-mono font-bold text-indigo-700 cursor-pointer transition-colors"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                EXPORT PDF AUDIT ↗
+              </button>
             </div>
           </div>
         )}
