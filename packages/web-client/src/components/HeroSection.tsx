@@ -46,6 +46,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   const [inputText, setInputText] = useState(PRESET_MESSAGES[0].text);
   const [emlResult, setEmlResult] = useState<EmlAnalysisResult | null>(null);
   const [urlScanResult, setUrlScanResult] = useState<UrlScanSummary | null>(null);
+  const [attachments, setAttachments] = useState<File[]>([]);
+  const [attachmentResults, setAttachmentResults] = useState<any[]>([]);
   const [dragOver, setDragOver] = useState(false);
   const [feedbackRecorded, setFeedbackRecorded] = useState(false);
   const [submittingFeedback, setSubmittingFeedback] = useState(false);
@@ -66,7 +68,17 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         setUrlScanResult(null);
       }
 
-      // 2. Classify text or EML
+      // 2. Scan attachments if present
+      if (attachments.length > 0) {
+        const attachData = await api.scanAttachments(attachments);
+        if (attachData.success) {
+          setAttachmentResults(attachData.results);
+        }
+      } else {
+        setAttachmentResults([]);
+      }
+
+      // 3. Classify text or EML
       if (inputMode === "eml") {
         const emlData = await api.analyzeEml(inputText);
         setEmlResult(emlData);
@@ -81,23 +93,39 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     }
   };
 
-  const handleFileUpload = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const content = e.target?.result as string;
-      if (content) {
-        setInputText(content);
-        setInputMode("eml");
+  const handleFiles = (files: FileList) => {
+    const newAttachments: File[] = [];
+    let foundEml = false;
+
+    Array.from(files).forEach((file) => {
+      const ext = file.name.toLowerCase().split('.').pop();
+      if ((ext === 'eml' || ext === 'txt' || ext === 'msg') && !foundEml) {
+        // Read the first EML/TXT file for text analysis
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const content = e.target?.result as string;
+          if (content) {
+            setInputText(content);
+            setInputMode("eml");
+          }
+        };
+        reader.readAsText(file);
+        foundEml = true;
+      } else {
+        newAttachments.push(file);
       }
-    };
-    reader.readAsText(file);
+    });
+
+    if (newAttachments.length > 0) {
+      setAttachments(prev => [...prev, ...newAttachments]);
+    }
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFileUpload(e.dataTransfer.files[0]);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFiles(e.dataTransfer.files);
     }
   };
 
@@ -211,19 +239,37 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 className="text-[11px] font-mono font-bold text-indigo-700 hover:underline flex items-center gap-1 cursor-pointer"
               >
                 <UploadCloud className="w-3.5 h-3.5" />
-                SELECT FILE (.EML/.TXT)
+                SELECT FILES (.EML/.ZIP/.PDF...)
               </button>
             )}
             <input
               ref={fileInputRef}
               type="file"
-              accept=".eml,.txt,.msg"
+              multiple
+              accept=".eml,.txt,.msg,.zip,.pdf,.exe,.docx"
               className="hidden"
               onChange={(e) => {
-                if (e.target.files?.[0]) handleFileUpload(e.target.files[0]);
+                if (e.target.files) handleFiles(e.target.files);
               }}
             />
           </div>
+
+          {attachments.length > 0 && (
+            <div className="mb-4 flex flex-wrap gap-2">
+              {attachments.map((file, idx) => (
+                <div key={idx} className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#fcfbf9] border border-[#e5e5e5] text-xs font-mono text-neutral-600">
+                  <FileText className="w-3.5 h-3.5" />
+                  <span className="truncate max-w-[150px]">{file.name}</span>
+                  <button 
+                    onClick={() => setAttachments(prev => prev.filter((_, i) => i !== idx))}
+                    className="ml-1 text-neutral-400 hover:text-rose-500 font-bold"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
 
           <textarea
             id="message-input"
@@ -295,6 +341,55 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     <div className="pt-1 text-[11px] text-neutral-600">
                       <span className="text-neutral-400 font-bold mr-1">THREAT SIGNALS:</span>
                       {u.reasons.join(" • ")}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Attachment Scanner Result Card */}
+        {attachmentResults.length > 0 && (
+          <div className="w-full max-w-3xl mt-6 p-6 rounded-3xl bg-white border border-[#e5e5e5] shadow-xl text-left transition-premium space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#f0f0f0]">
+              <div className="flex items-center gap-2">
+                <ShieldAlert className="w-5 h-5 text-indigo-700" />
+                <h4 className="font-display text-lg font-bold text-[#171717]">
+                  Attachment Sandbox ({attachmentResults.length} file{attachmentResults.length > 1 ? "s" : ""} scanned)
+                </h4>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {attachmentResults.map((att, idx) => (
+                <div key={idx} className={`p-4 rounded-2xl border text-xs font-mono space-y-2 ${
+                  att.scanResult.isMalicious
+                    ? "bg-rose-50/40 border-rose-200"
+                    : "bg-emerald-50/40 border-emerald-200"
+                }`}>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-neutral-400">FILENAME:</span>
+                      <span className="font-bold text-[#171717]">{att.filename}</span>
+                    </div>
+                    <span className={`font-bold ${att.scanResult.isMalicious ? "text-rose-600" : "text-emerald-600"}`}>
+                      {att.scanResult.isMalicious ? "MALICIOUS PAYLOAD" : "SAFE"}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 border-t border-neutral-200/60">
+                    <div className="flex items-center gap-2">
+                      <span className="text-neutral-400">SHA-256:</span>
+                      <span className="font-bold text-indigo-700 truncate max-w-[150px] sm:max-w-xs">{att.sha256}</span>
+                    </div>
+                    <span className="text-neutral-500 text-[11px]">{(att.size / 1024).toFixed(1)} KB</span>
+                  </div>
+
+                  {att.scanResult.threatType && (
+                    <div className="pt-1 text-[11px] text-neutral-600">
+                      <span className="text-neutral-400 font-bold mr-1">THREAT SIGNATURE:</span>
+                      {att.scanResult.threatType} ({att.scanResult.confidence}% confidence)
                     </div>
                   )}
                 </div>

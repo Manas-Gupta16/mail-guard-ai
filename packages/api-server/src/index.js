@@ -37,6 +37,7 @@ import { metricsRouter } from "./routes/metrics.js";
 import { emlRouter } from "./routes/eml.js";
 import { urlThreatRouter } from "./routes/urlThreat.js";
 import { reportRouter } from "./routes/report.js";
+import { attachmentRouter } from "./routes/attachments.js";
 import { setupWebSocket } from "./websocket/handler.js";
 
 const app = express();
@@ -61,6 +62,7 @@ app.use(`${API_PREFIX}/classify`, classifyRouter);
 app.use(`${API_PREFIX}/eml`, emlRouter);
 app.use(`${API_PREFIX}/url`, urlThreatRouter);
 app.use(`${API_PREFIX}/report`, reportRouter);
+app.use(`${API_PREFIX}/attachments`, attachmentRouter);
 app.use(`${API_PREFIX}/feedback`, feedbackRouter);
 app.use(`${API_PREFIX}/health`, healthRouter);
 app.use(`${API_PREFIX}/batch`, batchRouter);
