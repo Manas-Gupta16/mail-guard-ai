@@ -8,7 +8,7 @@
 import axios from "axios";
 import { logger } from "../utils/logger.js";
 
-const ML_SERVICE_URL = process.env.ML_SERVICE_URL || "http://localhost:8000";
+const ML_SERVICE_URL = (process.env.ML_SERVICE_URL || "http://127.0.0.1:8000").replace("localhost", "127.0.0.1");
 
 const client = axios.create({
   baseURL: ML_SERVICE_URL,

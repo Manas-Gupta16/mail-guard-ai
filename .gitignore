@@ -13,6 +13,7 @@ dist/
 build/
 *.onnx
 *.pkl
+!packages/ml-service/models/logistic_regression/*.pkl
 
 # ========================
 # Node.js
@@ -53,6 +54,9 @@ docker-compose.override.yml
 # ========================
 packages/ml-service/models/*
 !packages/ml-service/models/.gitkeep
+!packages/ml-service/models/logistic_regression
+!packages/ml-service/models/logistic_regression/**
+!packages/ml-service/models/logistic_regression/*.pkl
 packages/ml-service/data/*.csv
 packages/ml-service/data/*.parquet
 

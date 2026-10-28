@@ -35,6 +35,8 @@ export function getRedis() {
         return Math.min(times * 200, 2000);
       },
       lazyConnect: true,
+      enableOfflineQueue: false,
+      commandTimeout: 1000,
     });
 
     redis.on("connect", () => logger.info("Redis connected"));
@@ -58,7 +60,7 @@ export function getRedis() {
  */
 export async function cacheSet(key, value, ttlSeconds = 3600) {
   const client = getRedis();
-  if (!client) return;
+  if (!client || client.status !== "ready") return;
 
   try {
     await client.set(key, JSON.stringify(value), "EX", ttlSeconds);
@@ -73,7 +75,7 @@ export async function cacheSet(key, value, ttlSeconds = 3600) {
  */
 export async function cacheGet(key) {
   const client = getRedis();
-  if (!client) return null;
+  if (!client || client.status !== "ready") return null;
 
   try {
     const value = await client.get(key);

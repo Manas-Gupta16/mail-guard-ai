@@ -5,10 +5,10 @@
   "description": "Mail Guard AI — Enterprise Email Threat Detection & Explainable AI Gateway",
   "scripts": {
     "dev": "concurrently -n \"API,WEB\" -c \"bgBlue.bold,bgMagenta.bold\" \"npm run dev --prefix packages/api-server\" \"npm run dev --prefix packages/web-client\"",
-    "dev:all": "concurrently -n \"API,WEB,ML\" -c \"bgBlue.bold,bgMagenta.bold,bgGreen.bold\" \"npm run dev --prefix packages/api-server\" \"npm run dev --prefix packages/web-client\" \"cd packages/ml-service && uvicorn src.api.main:app --reload --port 8000\"",
+    "dev:all": "concurrently -n \"API,WEB,ML\" -c \"bgBlue.bold,bgMagenta.bold,bgGreen.bold\" \"npm run dev --prefix packages/api-server\" \"npm run dev --prefix packages/web-client\" \"cd packages/ml-service && python -m uvicorn src.api.main:app --reload --port 8000\"",
     "build": "npm run build --prefix packages/web-client",
     "test:api": "npm test --prefix packages/api-server",
-    "test:ml": "cd packages/ml-service && pytest"
+    "test:ml": "cd packages/ml-service && python -m pytest"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

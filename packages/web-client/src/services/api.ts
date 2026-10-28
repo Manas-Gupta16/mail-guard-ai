@@ -224,7 +224,10 @@ export const api = {
 };
 
 function generateMockClassification(text: string): ClassificationResult {
-  const isSpamKeywords = ["urgent", "verify", "suspended", "free", "prize", "password", "http://", "bit.ly", "click", "invoice", "macro"];
+  const isSpamKeywords = [
+    "urgent", "verify", "suspended", "free", "prize", "password", "http://", "bit.ly", "click", "invoice", "macro",
+    "winner", "award", "claim", "congratulations", "cash", "won", "selected", "50000", "voucher", "call now"
+  ];
   const matches = isSpamKeywords.filter((k) => text.toLowerCase().includes(k));
   const isPhishing = text.toLowerCase().includes("verify") || text.toLowerCase().includes("suspended") || text.toLowerCase().includes("bit.ly");
   const isMalware = text.toLowerCase().includes(".exe") || text.toLowerCase().includes(".zip") || text.toLowerCase().includes("invoice");

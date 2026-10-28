@@ -65,12 +65,13 @@ Rules:
 - Do NOT use markdown formatting. Write plain text only.
 - Keep it to exactly 2-3 sentences.`;
 
-    // Active model list supported by Gemini API v1beta
+    // Active model list supported by Gemini API
     const candidateModels = [
+      "gemini-3.5-flash-lite",
       "gemini-2.5-flash",
+      "gemini-1.5-flash",
+      "gemini-1.5-pro",
       "gemini-flash-latest",
-      "gemini-2.0-flash",
-      "gemini-2.0-flash-lite",
     ];
 
     for (const modelName of candidateModels) {

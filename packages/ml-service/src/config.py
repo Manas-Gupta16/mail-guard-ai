@@ -16,8 +16,8 @@ class Settings(BaseSettings):
     debug: bool = False
 
     # Model
-    model_path: str = "./models/distilbert-spam-v2"
-    model_version: str = "2.0.0"
+    model_path: str = "./models/logistic_regression"
+    model_version: str = "2.1.0"
     use_onnx: bool = True  # Use ONNX Runtime for faster inference
 
     # SHAP

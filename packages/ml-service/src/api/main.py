@@ -44,8 +44,11 @@ async def lifespan(app: FastAPI):
             model_path=settings.model_path,
             use_onnx=settings.use_onnx,
         )
-        explainer = ShapExplainer(classifier)
-        print(f"[+] Model v{settings.model_version} loaded successfully")
+        if getattr(classifier, "model_type", None) == "logistic_regression":
+            explainer = classifier
+        else:
+            explainer = ShapExplainer(classifier)
+        print(f"[+] Model ({classifier.model_type}) v{settings.model_version} loaded successfully")
     except Exception as err:
         print(f"[!] Failed to load model: {err}")
         classifier = None
