@@ -11,8 +11,9 @@ Supports two model backends:
      - Evaluated with SHAP token attribution
 """
 
-from pathlib import Path
 import pickle
+from pathlib import Path
+
 import numpy as np
 
 
@@ -29,7 +30,31 @@ class SpamClassifier:
     THREAT_CLASSES = ["ham", "marketing_spam", "phishing", "malware_dropper"]
 
     def __init__(self, model_path: str, use_onnx: bool = True):
-        self.model_path = Path(model_path)
+        raw_path = Path(model_path)
+        pkg_root = Path(__file__).resolve().parent.parent.parent
+        cleaned = model_path.replace("\\", "/").lstrip(".").lstrip("/")
+        pkg_candidate = pkg_root / cleaned
+
+        # Prefer the path that actually contains model files
+        if (
+            (raw_path / "model.pkl").exists()
+            or (raw_path / "model.onnx").exists()
+            or (raw_path / "config.json").exists()
+        ):
+            self.model_path = raw_path
+        elif (
+            (pkg_candidate / "model.pkl").exists()
+            or (pkg_candidate / "model.onnx").exists()
+            or (pkg_candidate / "config.json").exists()
+        ):
+            self.model_path = pkg_candidate
+        elif raw_path.exists():
+            self.model_path = raw_path
+        elif pkg_candidate.exists():
+            self.model_path = pkg_candidate
+        else:
+            self.model_path = raw_path
+
         self.use_onnx = use_onnx
         self._tokenizer = None
         self._model = None
@@ -52,9 +77,9 @@ class SpamClassifier:
     def _load_logistic_regression(self, model_file: Path, vec_file: Path):
         """Load trained Logistic Regression model and TF-IDF vectorizer."""
         with open(model_file, "rb") as f:
-            self._model = pickle.load(f)
+            self._model = pickle.load(f)  # noqa: S301
         with open(vec_file, "rb") as f:
-            self._vectorizer = pickle.load(f)
+            self._vectorizer = pickle.load(f)  # noqa: S301
 
         self.model_type = "logistic_regression"
         print(f"[+] Loaded Logistic Regression & TF-IDF vectorizer from {self.model_path}")
@@ -121,14 +146,13 @@ class SpamClassifier:
 
     def _predict_logistic_regression(self, text: str, features: dict) -> dict:
         """Inference using TF-IDF Vectorizer and Logistic Regression."""
-        X = self._vectorizer.transform([text])
-        probs = self._model.predict_proba(X)[0]
+        x_vec = self._vectorizer.transform([text])
+        probs = self._model.predict_proba(x_vec)[0]
         ham_prob = float(probs[0])
         spam_prob = float(probs[1])
-        is_spam = spam_prob >= 0.5
 
         # Decision function log-odds: z = w^T * x + b
-        decision = float(self._model.decision_function(X)[0])
+        decision = float(self._model.decision_function(x_vec)[0])
         logits = [-decision, decision]
 
         # Compute multi-class taxonomy scores
@@ -139,12 +163,19 @@ class SpamClassifier:
             features=features,
         )
 
-        risk_score = self._calculate_risk_score(threat_type, spam_prob, features)
+        is_spam = threat_type != "ham"
+        confidence = (1.0 - class_probs.get("ham", ham_prob)) if is_spam else ham_prob
+
+        risk_score = self._calculate_risk_score(
+            threat_type,
+            max(spam_prob, 0.75 if is_spam else spam_prob),
+            features,
+        )
         risk_level = self._get_risk_level(risk_score)
 
         return {
             "label": "spam" if is_spam else "ham",
-            "confidence": round(spam_prob if is_spam else ham_prob, 4),
+            "confidence": round(confidence, 4),
             "threat_type": threat_type,
             "risk_score": round(risk_score, 2),
             "risk_level": risk_level,
@@ -176,12 +207,19 @@ class SpamClassifier:
             features=features,
         )
 
-        risk_score = self._calculate_risk_score(threat_type, spam_prob, features)
+        is_spam = threat_type != "ham"
+        confidence = (1.0 - class_probs.get("ham", ham_prob)) if is_spam else ham_prob
+
+        risk_score = self._calculate_risk_score(
+            threat_type,
+            max(spam_prob, 0.75 if is_spam else spam_prob),
+            features,
+        )
         risk_level = self._get_risk_level(risk_score)
 
         return {
             "label": "spam" if is_spam else "ham",
-            "confidence": round(spam_prob if is_spam else ham_prob, 4),
+            "confidence": round(confidence, 4),
             "threat_type": threat_type,
             "risk_score": round(risk_score, 2),
             "risk_level": risk_level,
@@ -198,13 +236,13 @@ class SpamClassifier:
         if self.model_type != "logistic_regression" or self._vectorizer is None:
             return []
 
-        X = self._vectorizer.transform([text])
+        x_vec = self._vectorizer.transform([text])
         feature_names = self._vectorizer.get_feature_names_out()
         coefs = self._model.coef_[0]
 
-        row = X.tocoo()
+        row = x_vec.tocoo()
         token_scores = []
-        for col, val in zip(row.col, row.data):
+        for col, val in zip(row.col, row.data, strict=False):
             token_scores.append({
                 "token": str(feature_names[col]),
                 "score": float(coefs[col] * val),
@@ -221,14 +259,6 @@ class SpamClassifier:
         features: dict,
     ) -> tuple[str, dict[str, float]]:
         """Map binary model probabilities and threat heuristics to 4-class taxonomy."""
-        if spam_prob < 0.5:
-            return "ham", {
-                "ham": ham_prob,
-                "marketing_spam": spam_prob * 0.4,
-                "phishing": spam_prob * 0.4,
-                "malware_dropper": spam_prob * 0.2,
-            }
-
         phishing_signals = (
             features.get("phishing_score", 0.0) * 1.5
             + (1.0 if features.get("has_shortened_urls") else 0.0)
@@ -252,12 +282,37 @@ class SpamClassifier:
         }
 
         dominant_threat = max(scores, key=scores.get)
+        max_threat_score = scores[dominant_threat]
+
+        # In cybersecurity, a threat is triggered if statistical spam >= 0.50 OR
+        # if elevated spam probability (>= 0.35) combines with high threat signals (>= 0.80)
+        is_threat = (
+            spam_prob >= 0.5
+            or (spam_prob >= 0.35 and max_threat_score >= 0.8)
+            or max_threat_score >= 1.5
+        )
+
+        if not is_threat:
+            return "ham", {
+                "ham": ham_prob,
+                "marketing_spam": spam_prob * 0.4,
+                "phishing": spam_prob * 0.4,
+                "malware_dropper": spam_prob * 0.2,
+            }
+
+        effective_spam_prob = max(spam_prob, 0.85 if max_threat_score >= 0.8 else spam_prob)
         total_subscore = sum(scores.values()) or 1.0
         threat_probs = {
-            "ham": round(ham_prob, 4),
-            "marketing_spam": round(spam_prob * (scores["marketing_spam"] / total_subscore), 4),
-            "phishing": round(spam_prob * (scores["phishing"] / total_subscore), 4),
-            "malware_dropper": round(spam_prob * (scores["malware_dropper"] / total_subscore), 4),
+            "ham": round(1.0 - effective_spam_prob, 4),
+            "marketing_spam": round(
+                effective_spam_prob * (scores["marketing_spam"] / total_subscore), 4
+            ),
+            "phishing": round(
+                effective_spam_prob * (scores["phishing"] / total_subscore), 4
+            ),
+            "malware_dropper": round(
+                effective_spam_prob * (scores["malware_dropper"] / total_subscore), 4
+            ),
         }
 
         return dominant_threat, threat_probs

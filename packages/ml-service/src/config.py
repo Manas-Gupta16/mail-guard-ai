@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     # Feature extraction
     max_input_length: int = 5000  # Max characters to process
 
-    model_config = {"env_prefix": "ML_", "env_file": ".env"}
+    model_config = {"env_prefix": "ML_", "env_file": ".env", "extra": "ignore"}
 
 
 settings = Settings()

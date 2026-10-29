@@ -11,8 +11,9 @@ Produces:
 """
 
 import json
-from pathlib import Path
 import pickle
+from pathlib import Path
+
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
@@ -28,17 +29,20 @@ from sklearn.model_selection import train_test_split
 
 
 def train(
-    data_path: str = "data/raw/spam.csv",
-    output_dir: str = "models/logistic_regression",
+    data_path: str | None = None,
+    output_dir: str | None = None,
     test_size: float = 0.2,
     random_state: int = 42,
 ):
-    output_path = Path(output_dir)
+    """Train Logistic Regression on the Spam dataset."""
+    base_dir = Path(__file__).resolve().parent.parent
+    dataset_file = Path(data_path) if data_path else base_dir / "data" / "raw" / "spam.csv"
+    output_path = Path(output_dir) if output_dir else base_dir / "models" / "logistic_regression"
     output_path.mkdir(parents=True, exist_ok=True)
 
-    print(f"[+] Loading dataset from {data_path} ...")
-    df = pd.read_csv(data_path, encoding="latin-1")
-    
+    print(f"[+] Loading dataset from {dataset_file} ...")
+    df = pd.read_csv(dataset_file, encoding="latin-1")
+
     # SMS Spam dataset has columns v1 (label) and v2 (text)
     if "v1" in df.columns and "v2" in df.columns:
         df = df[["v1", "v2"]].copy()
@@ -61,14 +65,14 @@ def train(
     print(f"[+] Dataset loaded: {total_samples} samples ({ham_count} ham, {spam_count} spam)")
 
     # 1. Train / Test Split
-    X_train, X_test, y_train, y_test = train_test_split(
+    x_train, x_test, y_train, y_test = train_test_split(
         df["text"],
         df["label"],
         test_size=test_size,
         random_state=random_state,
         stratify=df["label"],
     )
-    print(f"[+] Train set: {len(X_train)} samples, Test set: {len(X_test)} samples")
+    print(f"[+] Train set: {len(x_train)} samples, Test set: {len(x_test)} samples")
 
     # 2. TF-IDF Feature Extraction (unigrams + bigrams, English stop words)
     print("[+] Extracting TF-IDF features ...")
@@ -78,8 +82,8 @@ def train(
         max_features=5000,
         sublinear_tf=True,
     )
-    X_train_vec = vectorizer.fit_transform(X_train)
-    X_test_vec = vectorizer.transform(X_test)
+    x_train_vec = vectorizer.fit_transform(x_train)
+    x_test_vec = vectorizer.transform(x_test)
     print(f"[+] Vocabulary size: {len(vectorizer.vocabulary_)} features")
 
     # 3. Logistic Regression Classifier
@@ -90,11 +94,10 @@ def train(
         class_weight="balanced",  # Accounts for class imbalance between ham and spam
         random_state=random_state,
     )
-    model.fit(X_train_vec, y_train)
+    model.fit(x_train_vec, y_train)
 
     # 4. Evaluation
-    y_pred = model.predict(X_test_vec)
-    y_prob = model.predict_proba(X_test_vec)[:, 1]
+    y_pred = model.predict(x_test_vec)
 
     acc = float(accuracy_score(y_test, y_pred))
     prec = float(precision_score(y_test, y_pred))
@@ -106,8 +109,8 @@ def train(
         "model_name": "Logistic Regression with TF-IDF",
         "dataset": "SMS Spam Collection (5,572 samples)",
         "features": "TF-IDF (unigrams + bigrams, stop_words='english', max_features=5000)",
-        "train_samples": len(X_train),
-        "test_samples": len(X_test),
+        "train_samples": len(x_train),
+        "test_samples": len(x_test),
         "accuracy": round(acc, 4),
         "precision": round(prec, 4),
         "recall": round(rec, 4),
@@ -129,7 +132,8 @@ def train(
     print(f"F1 Score : {f1 * 100:.2f}%")
     print(f"Confusion Matrix (TN={cm[0][0]}, FP={cm[0][1]}, FN={cm[1][0]}, TP={cm[1][1]})")
     print("=" * 50)
-    print("\nClassification Report:\n", classification_report(y_test, y_pred, target_names=["ham", "spam"]))
+    report = classification_report(y_test, y_pred, target_names=["ham", "spam"])
+    print("\nClassification Report:\n", report)
 
     # 5. Save Artifacts
     model_file = output_path / "model.pkl"

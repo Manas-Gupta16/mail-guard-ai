@@ -12,6 +12,7 @@ from fastapi.testclient import TestClient
 
 # ─── Mock the classifier before importing the app ─────────────────────
 mock_classifier = MagicMock()
+mock_classifier.model_type = "logistic_regression"
 mock_classifier.predict.return_value = {
     "label": "spam",
     "confidence": 0.95,
@@ -22,6 +23,11 @@ mock_classifier.predict.return_value = {
     "logits": [0.2, 3.0],
 }
 mock_classifier.tokenizer = MagicMock()
+mock_classifier.explain.return_value = [
+    {"token": "free", "score": 0.35},
+    {"token": "prize", "score": 0.28},
+    {"token": "click", "score": 0.19},
+]
 
 mock_explainer = MagicMock()
 mock_explainer.explain.return_value = [
